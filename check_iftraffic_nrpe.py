@@ -20,7 +20,7 @@ def bits2bytes(bits):
 
 
 def load_traffic(data_file):
-    """load the traffic data from a file. returns none if nothing exists"""
+    """load the traffic data from a file."""
     traffic = dict()
     last_time = 0.0
     try:
@@ -41,6 +41,7 @@ def load_traffic(data_file):
 
 
 def save_traffic(data, data_file):
+
     f = open(data_file, 'w')
     f.write(str(time.time()) + "\n")
     for if_name, if_data in data.iteritems():
@@ -152,6 +153,7 @@ def main():
     exit_status = 'OK'
     data_file = '/var/tmp/traffic_stats.dat'
     bandwidth = args.bandwidth
+    problems = []
 
     # capture all the data from the system
     traffic_data = get_traffic()
@@ -160,7 +162,11 @@ def main():
     previous_traffic_time, if_data0 = load_traffic(data_file)
 
     # save the data from the system
-    save_traffic(traffic_data, data_file)
+    try:
+        save_traffic(traffic_data, data_file)
+    except IOError:
+        problems.append("Cannot write in %s" % data_file)
+        exit_status = 'UNKNOWN'
 
     # get the time between the two metrics
     elapsed_time = time.time() - previous_traffic_time
@@ -168,19 +174,26 @@ def main():
     # remove interfaces if needed
     if args.exclude:
         for x in args.exclude:
-            del traffic_data[x]
+            if x in traffic_data:
+                del traffic_data[x]
+
     if args.interfaces:
         traffic_data2 = dict()
         for i in args.interfaces:
-            traffic_data2[i] = traffic_data[i]
+            if i in traffic_data:
+                traffic_data2[i] = traffic_data[i]
+            else:
+                """The User wants a non existent interface..."""
+                problems.append("Interface %s not found" % i)
+                exit_status = 'CRITICAL'
         traffic_data = traffic_data2
 
-    # calculate the results
-    #results = dict()
-    problems = []
+    # calculate the results and the output
     perfdata = []
+
     if not if_data0:
-        problems.append("First run.")
+        if not problems:
+            problems.append("First run.")
     else:
         for if_name, if_data1 in traffic_data.iteritems():
             # calculate the bytes
