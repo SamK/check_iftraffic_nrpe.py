@@ -1,16 +1,15 @@
 #!/usr/bin/python
 #
-# npre plugin to monitor network bandwidth
-# Created by Samuel Krieg
+# NRPE plugin to monitor network traffic
 #
-# Script based on check_iftraffic_nrpe.pl
+# Script based on check_iftraffic_nrpe.pl by Van Dyck Sven
 
 import sys
 import time
 import argparse
 
-__version__ = '0'
-__author__ = 'me'
+__version__ = '0.1'
+__author__ = 'Samuel Krieg'
 
 
 def bits2bytes(bits):
