@@ -3,6 +3,9 @@
 # NRPE plugin to monitor network traffic
 #
 # Script based on check_iftraffic_nrpe.pl by Van Dyck Sven
+#
+# Website: https://github.com/samyboy/check_iftraffic_nrpe
+#
 
 import sys
 import time
