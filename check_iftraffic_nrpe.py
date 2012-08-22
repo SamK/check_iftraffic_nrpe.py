@@ -4,7 +4,7 @@
 #
 # Script based on check_iftraffic_nrpe.pl by Van Dyck Sven
 #
-# Website: https://github.com/samyboy/check_iftraffic_nrpe
+# Website: https://github.com/samyboy/check_iftraffic_nrpe.py
 #
 
 import sys
@@ -145,6 +145,12 @@ def get_perfdata(label, value, warn_level, crit_level, min_level, max_level):
             {'warn_level': warn_level, 'crit_level': crit_level,
              'min_level': min_level, 'max_level': max_level})
 
+def exclude_data(exclude, traffic_data):
+    for interface in exclude:
+        if interface in traffic_data:
+            del traffic_data[interface]
+
+
 
 def main():
 
@@ -173,10 +179,9 @@ def main():
 
     # remove interfaces if needed
     if args.exclude:
-        for x in args.exclude:
-            if x in traffic_data:
-                del traffic_data[x]
+        exclude_data(args.exclude, traffic_data)
 
+    # only keep the wanted interfaces if specified
     if args.interfaces:
         traffic_data2 = dict()
         for i in args.interfaces:
