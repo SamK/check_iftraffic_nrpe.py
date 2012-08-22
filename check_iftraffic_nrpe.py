@@ -15,7 +15,16 @@ __version__ = '0.2'
 __author__ = 'Samuel Krieg'
 
 
+class InterfaceError(Exception):
+    def __init__(self, value):
+        self.value = value
+
+    def __str__(self):
+        return repr(self.value)
+
+
 def bits2bytes(bits):
+    """Convert bits into bytes"""
     return bits / 8
 
 
@@ -109,6 +118,7 @@ def parse_arguments():
 
 
 def max_counter():
+    """Define the maximum allowed value by the system"""
     if sys.maxsize > 2 ** 32:
         return 2 ** 64 - 1
     else:
@@ -116,6 +126,8 @@ def max_counter():
 
 
 def calc_diff(value1, value2):
+    """Calculate the difference between two values.
+    The function takes care of the maximum allowed value by the system"""
     if value1 > value2:
         return max_counter() - value1 + value2
     else:
@@ -124,6 +136,7 @@ def calc_diff(value1, value2):
 
 
 def get_traffic_status(xbytes, bandwidth, crit, warn):
+    """Returns the string defining the Nagios status of the traffic"""
     if xbytes > crit * (bandwidth / 100):
         return 'CRITICAL'
     if xbytes > warn * (bandwidth / 100):
@@ -132,6 +145,7 @@ def get_traffic_status(xbytes, bandwidth, crit, warn):
 
 
 def worst_status(status1, status2):
+    """Compare two Nagios statuses and returns the worst"""
     global _status_codes
     status_order = ['CRITICAL', 'WARNING', 'UNKNOWN', 'OK']
     for status in status_order:
@@ -140,20 +154,32 @@ def worst_status(status1, status2):
 
 
 def get_perfdata(label, value, warn_level, crit_level, min_level, max_level):
+    """Return the perfdata string of an interface"""
     return ("%(label)s=%(value).2f;" % {'label': label, 'value': value} + \
             '%(warn_level)d;%(crit_level)d;%(min_level)d;%(max_level)d' % \
             {'warn_level': warn_level, 'crit_level': crit_level,
              'min_level': min_level, 'max_level': max_level})
 
-def exclude_data(exclude, traffic_data):
+
+def exclude_interfaces(exclude, traffic_data):
+    """Remove the data of the excluded interfaces"""
     for interface in exclude:
         if interface in traffic_data:
             del traffic_data[interface]
 
 
+def specify_interfaces(interfaces, traffic_data):
+    traffic_data2 = dict()
+    for i in interfaces:
+        if i in traffic_data:
+            traffic_data2[i] = traffic_data[i]
+        else:
+            raise InterfaceError("Interface %s not found" % i)
+    traffic_data = traffic_data2
+
 
 def main():
-
+    """This main function is wayyyy too long"""
     args = parse_arguments()
     _status_codes = {'OK': 0, 'WARNING': 1, 'CRITICAL': 2, 'UNKNOWN': 3}
     exit_status = 'OK'
@@ -165,7 +191,7 @@ def main():
     traffic_data = get_traffic()
 
     # load the previous data
-    previous_traffic_time, if_data0 = load_traffic(data_file)
+    time0, if_data0 = load_traffic(data_file)
 
     # save the data from the system
     try:
@@ -175,23 +201,19 @@ def main():
         exit_status = 'UNKNOWN'
 
     # get the time between the two metrics
-    elapsed_time = time.time() - previous_traffic_time
+    elapsed_time = time.time() - time0
 
     # remove interfaces if needed
     if args.exclude:
-        exclude_data(args.exclude, traffic_data)
+        exclude_interfaces(args.exclude, traffic_data)
 
     # only keep the wanted interfaces if specified
     if args.interfaces:
-        traffic_data2 = dict()
-        for i in args.interfaces:
-            if i in traffic_data:
-                traffic_data2[i] = traffic_data[i]
-            else:
-                """The User wants a non existent interface..."""
-                problems.append("Interface %s not found" % i)
-                exit_status = 'CRITICAL'
-        traffic_data = traffic_data2
+        try:
+            specify_interfaces(args.interfaces, traffic_data)
+        except InterfaceError as e:
+            problems.append(str(e))
+            exit_status = 'CRITICAL'
 
     # calculate the results and the output
     perfdata = []
