@@ -1,5 +1,5 @@
-check_iftraffic_nrpe
-====================
+check_iftraffic_nrpe.py
+=======================
 
 This is a Nagios plugin to check network traffic with NRPE on Linux.
 This script has been created because I like writing Python scripts.
@@ -15,8 +15,11 @@ Prerequisites
 Compatibility
 -------------
 
-This script has been tested unders Nagios 3.x only.
-No idea how it behaves with older versions.
+This script has been tested under Python 2.x only.
+I don't know if it works unders Python 3.
+
+This script has been tested under Nagios 3.x only.
+I have no idea how it behaves with older versions.
 
 Usage examples
 --------------
