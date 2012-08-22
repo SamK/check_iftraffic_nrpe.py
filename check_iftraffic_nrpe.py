@@ -2,7 +2,8 @@
 #
 # NRPE plugin to monitor network traffic
 #
-# Script based on check_iftraffic_nrpe.pl by Van Dyck Sven
+# This script is based on check_iftraffic_nrpe.pl by Van Dyck Sven.
+# This file is pep8 compliant.
 #
 # Website: https://github.com/samyboy/check_iftraffic_nrpe.py
 #
@@ -70,12 +71,8 @@ def get_traffic():
             iface_name, iface_data = line.split(':')
             iface_name = iface_name.strip()
             data_values = iface_data.split()
-            # receive:
-            # 0
-            # bytes    packets errs drop fifo frame compressed multicast
-            # transmit:
-            # 8
-            # bytes    packets errs drop fifo colls carrier compressed
+            # receive: column 0
+            # transmit: column 8
             data['rxbytes'] = int(data_values[0])
             data['txbytes'] = int(data_values[8])
             traffic[iface_name] = data
@@ -162,19 +159,20 @@ def get_perfdata(label, value, warn_level, crit_level, min_level, max_level):
 
 
 def exclude_interfaces(exclude, traffic_data):
-    """Remove the data of the excluded interfaces"""
+    """Remove the interfaces excluded by the user"""
     for interface in exclude:
         if interface in traffic_data:
             del traffic_data[interface]
 
 
 def specify_interfaces(interfaces, traffic_data):
+    """Remove the interfaces not included by the user"""
     traffic_data2 = dict()
     for i in interfaces:
         if i in traffic_data:
             traffic_data2[i] = traffic_data[i]
         else:
-            raise InterfaceError("Interface %s not found" % i)
+            raise InterfaceError("Interface %s not found." % i)
     traffic_data = traffic_data2
 
 
@@ -197,7 +195,7 @@ def main():
     try:
         save_traffic(traffic_data, data_file)
     except IOError:
-        problems.append("Cannot write in %s" % data_file)
+        problems.append("Cannot write in %s." % data_file)
         exit_status = 'UNKNOWN'
 
     # get the time between the two metrics
@@ -212,13 +210,16 @@ def main():
         try:
             specify_interfaces(args.interfaces, traffic_data)
         except InterfaceError as e:
-            problems.append(str(e))
+            message = str(e).replace("'", "")
+            problems.append(message)
             exit_status = 'CRITICAL'
 
     # calculate the results and the output
     perfdata = []
 
     if not if_data0:
+        """The script did not gather the previous data.
+        This might be the first run."""
         if not problems:
             problems.append("First run.")
     else:
@@ -262,7 +263,7 @@ def main():
             perfdata.append(get_perfdata('in-' + if_name, rxbytes, warn_level,
             crit_level, min_level, max_level))
 
-    print "TRAFFIC %s: %s | %s " % (exit_status, '_'.join(problems),
+    print "TRAFFIC %s: %s | %s " % (exit_status, ' '.join(problems),
                                    ' '.join(perfdata))
 
     sys.exit(_status_codes[exit_status])
