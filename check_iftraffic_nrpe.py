@@ -3,7 +3,11 @@
 # NRPE plugin to monitor network traffic
 #
 # This script is based on check_iftraffic_nrpe.pl by Van Dyck Sven.
-# This file is pep8 compliant.
+#
+# This file tends follow Python coding good practices:
+# pep8 --ignore=E111 --ignore=E221  --show-source --show-pep8 file.py
+# pylint -E file.py
+#
 #
 # Website: https://github.com/samyboy/check_iftraffic_nrpe.py
 #
@@ -12,8 +16,12 @@ import sys
 import time
 import argparse
 
-__version__ = '0.2'
+__version__ = '0.3'
 __author__ = 'Samuel Krieg'
+
+#
+# Exceptions
+#
 
 
 class InterfaceError(Exception):
@@ -23,20 +31,77 @@ class InterfaceError(Exception):
     def __str__(self):
         return repr(self.value)
 
+#
+# Calc functions
+#
+
 
 def bits2bytes(bits):
     """Convert bits into bytes"""
     return bits / 8
 
 
-def load_traffic(data_file):
-    """load the traffic data from a file."""
-    traffic = dict()
+def max_counter():
+    """Define the maximum allowed value by the system"""
+    if sys.maxsize > 2 ** 32:
+        return 2 ** 64 - 1
+    else:
+        return 2 ** 32 - 1
+
+
+def calc_diff(value1, value2):
+    """Calculate the difference between two values.
+    The function takes care of the maximum allowed value by the system"""
+    if value1 > value2:
+        return max_counter() - value1 + value2
+    else:
+        """ normal behaviour """
+        return value2 - value1
+
+
+#
+# Nagios related functions
+#
+
+
+def get_perfdata(label, value, warn_level, crit_level, min_level, max_level):
+    """Return the perfdata string of an item"""
+    return ("%(label)s=%(value).2f;" % {'label': label, 'value': value} + \
+            '%(warn_level)d;%(crit_level)d;%(min_level)d;%(max_level)d' % \
+            {'warn_level': warn_level, 'crit_level': crit_level,
+             'min_level': min_level, 'max_level': max_level})
+
+
+def nagios_value_status(value, max_value, percent_crit, percent_warn):
+    """Returns the string defining the Nagios status of the value"""
+    if value > percent_crit * (max_value / 100):
+        return 'CRITICAL'
+    if value > percent_warn * (max_value / 100):
+        return 'WARNING'
+    return 'OK'
+
+
+def worst_status(status1, status2):
+    """Compare two Nagios statuses and returns the worst"""
+    global _status_codes
+    status_order = ['CRITICAL', 'WARNING', 'UNKNOWN', 'OK']
+    for status in status_order:
+        if status1 == status or status2 == status:
+            return status
+
+
+#
+# File functions
+#
+
+def load_data(data_file, columns):
+    """load the data from a file."""
+    values = dict()
     last_time = 0.0
     try:
         f = open(data_file)
     except IOError:
-        return 0.0, traffic
+        return 0.0, values
 
     i = 0
     for line in f:
@@ -45,13 +110,13 @@ def load_traffic(data_file):
             last_time = float(line.strip())
         else:
             data = line.split()
-            traffic[data[0]] = {'rxbytes': int(data[1]),
-                                'txbytes': int(data[2])}
-    return last_time, traffic
+            values[data[0]] = {columns[0]: int(data[1]),
+                               columns[1]: int(data[2])}
+    return last_time, values
 
 
-def save_traffic(data, data_file):
-
+def save_data(data, data_file):
+    """save the data to a file."""
     f = open(data_file, 'w')
     f.write(str(time.time()) + "\n")
     for if_name, if_data in data.iteritems():
@@ -59,7 +124,11 @@ def save_traffic(data, data_file):
                 (if_name, if_data['rxbytes'], if_data['txbytes']))
 
 
-def get_traffic():
+#
+# Network interfaces functions
+#
+
+def get_data():
     """list all the network data"""
     traffic = dict()
     my_file = open('/proc/net/dev')
@@ -79,8 +148,30 @@ def get_traffic():
     return traffic
 
 
-def parse_arguments():
+#
+# User arguments related functions
+#
 
+def exclude_device(exclude, data):
+    """Remove the interfaces excluded by the user"""
+    for interface in exclude:
+        if interface in data:
+            del data[interface]
+
+
+def specify_interfaces(interfaces, traffic_data):
+    """Remove the interfaces not included by the user"""
+    traffic_data2 = dict()
+    for i in interfaces:
+        if i in traffic_data:
+            traffic_data2[i] = traffic_data[i]
+        else:
+            raise InterfaceError("Interface %s not found." % i)
+    traffic_data = traffic_data2
+
+
+def parse_arguments():
+    """Try to parse the command line arguments givent by the user"""
     global __author__
     global __version__
 
@@ -114,68 +205,6 @@ def parse_arguments():
     return p.parse_args()
 
 
-def max_counter():
-    """Define the maximum allowed value by the system"""
-    if sys.maxsize > 2 ** 32:
-        return 2 ** 64 - 1
-    else:
-        return 2 ** 32 - 1
-
-
-def calc_diff(value1, value2):
-    """Calculate the difference between two values.
-    The function takes care of the maximum allowed value by the system"""
-    if value1 > value2:
-        return max_counter() - value1 + value2
-    else:
-        """ normal behaviour """
-        return value2 - value1
-
-
-def get_traffic_status(xbytes, bandwidth, crit, warn):
-    """Returns the string defining the Nagios status of the traffic"""
-    if xbytes > crit * (bandwidth / 100):
-        return 'CRITICAL'
-    if xbytes > warn * (bandwidth / 100):
-        return 'WARNING'
-    return 'OK'
-
-
-def worst_status(status1, status2):
-    """Compare two Nagios statuses and returns the worst"""
-    global _status_codes
-    status_order = ['CRITICAL', 'WARNING', 'UNKNOWN', 'OK']
-    for status in status_order:
-        if status1 == status or status2 == status:
-            return status
-
-
-def get_perfdata(label, value, warn_level, crit_level, min_level, max_level):
-    """Return the perfdata string of an interface"""
-    return ("%(label)s=%(value).2f;" % {'label': label, 'value': value} + \
-            '%(warn_level)d;%(crit_level)d;%(min_level)d;%(max_level)d' % \
-            {'warn_level': warn_level, 'crit_level': crit_level,
-             'min_level': min_level, 'max_level': max_level})
-
-
-def exclude_interfaces(exclude, traffic_data):
-    """Remove the interfaces excluded by the user"""
-    for interface in exclude:
-        if interface in traffic_data:
-            del traffic_data[interface]
-
-
-def specify_interfaces(interfaces, traffic_data):
-    """Remove the interfaces not included by the user"""
-    traffic_data2 = dict()
-    for i in interfaces:
-        if i in traffic_data:
-            traffic_data2[i] = traffic_data[i]
-        else:
-            raise InterfaceError("Interface %s not found." % i)
-    traffic_data = traffic_data2
-
-
 def main():
     """This main function is wayyyy too long"""
     args = parse_arguments()
@@ -186,14 +215,14 @@ def main():
     problems = []
 
     # capture all the data from the system
-    traffic_data = get_traffic()
+    traffic_data = get_data()
 
     # load the previous data
-    time0, if_data0 = load_traffic(data_file)
+    time0, if_data0 = load_data(data_file, ['rxbytes', 'txbytes'])
 
     # save the data from the system
     try:
-        save_traffic(traffic_data, data_file)
+        save_data(traffic_data, data_file)
     except IOError:
         problems.append("Cannot write in %s." % data_file)
         exit_status = 'UNKNOWN'
@@ -203,7 +232,7 @@ def main():
 
     # remove interfaces if needed
     if args.exclude:
-        exclude_interfaces(args.exclude, traffic_data)
+        exclude_device(args.exclude, traffic_data)
 
     # only keep the wanted interfaces if specified
     if args.interfaces:
@@ -233,14 +262,14 @@ def main():
             txbytes = txbytes / elapsed_time
             rxbytes = rxbytes / elapsed_time
             # determine a status for TX
-            new_exit_status = get_traffic_status(txbytes, bandwidth,
+            new_exit_status = nagios_value_status(txbytes, bandwidth,
                                                  args.critical, args.warning)
             if new_exit_status != 'OK':
                 problems.append("%s: %sMbs/%sMbs" % \
                                 (if_name, txbytes, bandwidth))
             exit_status = worst_status(exit_status, new_exit_status)
             # determine a status for RX
-            new_exit_status = get_traffic_status(rxbytes, bandwidth,
+            new_exit_status = nagios_value_status(rxbytes, bandwidth,
                                                  args.critical, args.warning)
             if new_exit_status != 'OK':
                 problems.append("%s: %sMbs/%sMbs" % \
