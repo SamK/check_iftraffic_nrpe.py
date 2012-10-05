@@ -84,7 +84,6 @@ def nagios_value_status(value, max_value, percent_crit, percent_warn):
 
 def worst_status(status1, status2):
     """Compare two Nagios statuses and returns the worst"""
-    global _status_codes
     status_order = ['CRITICAL', 'WARNING', 'UNKNOWN', 'OK']
     for status in status_order:
         if status1 == status or status2 == status:
@@ -98,22 +97,25 @@ def worst_status(status1, status2):
 def load_data(data_file, columns):
     """load the data from a file."""
     values = dict()
-    last_modification = os.path.getmtime(data_file)
     try:
         f = open(data_file)
     except IOError:
         return 0.0, values
-
+    last_modification = os.path.getmtime(data_file)
     for line in f:
         data = line.split()
-        values[data[0]] = {columns[0]: int(data[1]),
-                               columns[1]: int(data[2])}
+        # get the device name
+        device_name = data.pop(0)
+        # transform values into integer
+        data = map(int, data)
+        # create a nice dictionnary of the values
+        values[device_name] = dict(zip(columns, data))
     return last_modification, values
 
 
-def save_data(data, data_file):
+def save_data(data, filename):
     """save the data to a file."""
-    f = open(data_file, 'w')
+    f = open(filename, 'w')
     for if_name, if_data in data.iteritems():
         f.write("%s\t%s\t%s\n" %
                 (if_name, if_data['rxbytes'], if_data['txbytes']))
@@ -204,6 +206,7 @@ def main():
     """This main function is wayyyy too long"""
     args = parse_arguments()
     _status_codes = {'OK': 0, 'WARNING': 1, 'CRITICAL': 2, 'UNKNOWN': 3}
+    _counters = ['rxbytes', 'txbytes']
     exit_status = 'OK'
     data_file = '/var/tmp/traffic_stats.dat'
     bandwidth = args.bandwidth
@@ -213,7 +216,7 @@ def main():
     traffic_data = get_data()
 
     # load the previous data
-    time0, if_data0 = load_data(data_file, ['rxbytes', 'txbytes'])
+    time0, if_data0 = load_data(data_file, _counters)
 
     # save the data from the system
     try:
