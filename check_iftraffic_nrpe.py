@@ -25,7 +25,7 @@ __author__ = 'Samuel Krieg'
 #
 
 
-class InterfaceError(Exception):
+class DeviceError(Exception):
     def __init__(self, value):
         self.value = value
 
@@ -154,20 +154,20 @@ def get_data():
 
 def exclude_device(exclude, data):
     """Remove the interfaces excluded by the user"""
-    for interface in exclude:
-        if interface in data:
-            del data[interface]
+    for device in exclude:
+        if device in data:
+            del data[device]
 
 
-def specify_interfaces(interfaces, traffic_data):
-    """Remove the interfaces not included by the user"""
-    traffic_data2 = dict()
-    for i in interfaces:
-        if i in traffic_data:
-            traffic_data2[i] = traffic_data[i]
+def specify_device(devices, data):
+    """Remove the devices not included by the user"""
+    data2 = dict()
+    for i in devices:
+        if i in data:
+            data2[i] = data[i]
         else:
-            raise InterfaceError("Interface %s not found." % i)
-    traffic_data = traffic_data2
+            raise DeviceError("Device %s not found." % i)
+    data = data2
 
 
 def parse_arguments():
@@ -207,23 +207,29 @@ def parse_arguments():
 
 def main():
     """This main function is wayyyy too long"""
-    args = parse_arguments()
+    # These are the default values
+    # Nagios status codes
     _status_codes = {'OK': 0, 'WARNING': 1, 'CRITICAL': 2, 'UNKNOWN': 3}
+    # counters needed for calculations
     _counters = ['rxbytes', 'txbytes']
+    # The default exit status
     exit_status = 'OK'
+    # The temporary file where data will be stored between to metrics
     data_file = '/var/tmp/traffic_stats.dat'
+
+    args = parse_arguments()
     bandwidth = args.bandwidth
     problems = []
 
     # capture all the data from the system
-    traffic_data = get_data()
+    traffic = get_data()
 
     # load the previous data
     time0, if_data0 = load_data(data_file, _counters)
 
     # save the data from the system
     try:
-        save_data(data_file, traffic_data, _counters)
+        save_data(data_file, traffic, _counters)
     except IOError:
         problems.append("Cannot write in %s." % data_file)
         exit_status = 'UNKNOWN'
@@ -233,13 +239,13 @@ def main():
 
     # remove interfaces if needed
     if args.exclude:
-        exclude_device(args.exclude, traffic_data)
+        exclude_device(args.exclude, traffic)
 
     # only keep the wanted interfaces if specified
     if args.interfaces:
         try:
-            specify_interfaces(args.interfaces, traffic_data)
-        except InterfaceError as e:
+            specify_interfaces(args.interfaces, traffic)
+        except DeviceError as e:
             message = str(e).replace("'", "")
             problems.append(message)
             exit_status = 'CRITICAL'
@@ -253,7 +259,7 @@ def main():
         if not problems:
             problems.append("First run.")
     else:
-        for if_name, if_data1 in traffic_data.iteritems():
+        for if_name, if_data1 in traffic.iteritems():
             # calculate the bytes
             txbytes = calc_diff(if_data0[if_name]['txbytes'],
                                 if_data1['txbytes'])
@@ -264,14 +270,14 @@ def main():
             rxbytes = rxbytes / elapsed_time
             # determine a status for TX
             new_exit_status = nagios_value_status(txbytes, bandwidth,
-                                                 args.critical, args.warning)
+                                                  args.critical, args.warning)
             if new_exit_status != 'OK':
                 problems.append("%s: %sMbs/%sMbs" % \
                                 (if_name, txbytes, bandwidth))
             exit_status = worst_status(exit_status, new_exit_status)
             # determine a status for RX
             new_exit_status = nagios_value_status(rxbytes, bandwidth,
-                                                 args.critical, args.warning)
+                                                  args.critical, args.warning)
             if new_exit_status != 'OK':
                 problems.append("%s: %sMbs/%sMbs" % \
                                 (if_name, rxbytes, bandwidth))
@@ -294,7 +300,7 @@ def main():
             crit_level, min_level, max_level))
 
     print "TRAFFIC %s: %s | %s " % (exit_status, ' '.join(problems),
-                                   ' '.join(perfdata))
+                                    ' '.join(perfdata))
 
     sys.exit(_status_codes[exit_status])
 
