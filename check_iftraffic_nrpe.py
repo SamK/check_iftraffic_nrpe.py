@@ -12,6 +12,7 @@
 # Website: https://github.com/samyboy/check_iftraffic_nrpe.py
 #
 
+import os
 import sys
 import time
 import argparse
@@ -97,28 +98,22 @@ def worst_status(status1, status2):
 def load_data(data_file, columns):
     """load the data from a file."""
     values = dict()
-    last_time = 0.0
+    last_modification = os.path.getmtime(data_file)
     try:
         f = open(data_file)
     except IOError:
         return 0.0, values
 
-    i = 0
     for line in f:
-        i += 1
-        if i == 1:
-            last_time = float(line.strip())
-        else:
-            data = line.split()
-            values[data[0]] = {columns[0]: int(data[1]),
+        data = line.split()
+        values[data[0]] = {columns[0]: int(data[1]),
                                columns[1]: int(data[2])}
-    return last_time, values
+    return last_modification, values
 
 
 def save_data(data, data_file):
     """save the data to a file."""
     f = open(data_file, 'w')
-    f.write(str(time.time()) + "\n")
     for if_name, if_data in data.iteritems():
         f.write("%s\t%s\t%s\n" %
                 (if_name, if_data['rxbytes'], if_data['txbytes']))
