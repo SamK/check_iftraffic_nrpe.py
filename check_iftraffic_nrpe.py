@@ -17,7 +17,7 @@ import sys
 import time
 import argparse
 
-__version__ = '0.3'
+__version__ = '0.4'
 __author__ = 'Samuel Krieg'
 
 #
@@ -295,13 +295,15 @@ def main():
             max_level = bandwidth
 
             perfdata.append(get_perfdata('out-' + if_name, txbytes, warn_level,
-            crit_level, min_level, max_level))
+                            crit_level, min_level, max_level))
             perfdata.append(get_perfdata('in-' + if_name, rxbytes, warn_level,
-            crit_level, min_level, max_level))
+                            crit_level, min_level, max_level))
 
+    # This is the final output
     print "TRAFFIC %s: %s | %s " % (exit_status, ' '.join(problems),
                                     ' '.join(perfdata))
 
+    # This is the exit code
     sys.exit(_status_codes[exit_status])
 
 if __name__ == '__main__':
