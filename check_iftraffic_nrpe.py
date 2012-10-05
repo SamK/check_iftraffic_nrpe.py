@@ -94,14 +94,14 @@ def worst_status(status1, status2):
 # File functions
 #
 
-def load_data(data_file, columns):
+def load_data(filename, columns):
     """load the data from a file."""
     values = dict()
     try:
-        f = open(data_file)
+        f = open(filename)
     except IOError:
         return 0.0, values
-    last_modification = os.path.getmtime(data_file)
+    last_modification = os.path.getmtime(filename)
     for line in f:
         data = line.split()
         # get the device name
@@ -113,12 +113,15 @@ def load_data(data_file, columns):
     return last_modification, values
 
 
-def save_data(data, filename):
+def save_data(filename, data, columns):
     """save the data to a file."""
     f = open(filename, 'w')
-    for if_name, if_data in data.iteritems():
-        f.write("%s\t%s\t%s\n" %
-                (if_name, if_data['rxbytes'], if_data['txbytes']))
+    for device_name, if_data in data.iteritems():
+        """write each line"""
+        values = []
+        for name in columns:
+            values.append(str(if_data[name]))
+        f.write("%s\t%s\n" % (device_name, "\t".join(values)))
 
 
 #
@@ -220,7 +223,7 @@ def main():
 
     # save the data from the system
     try:
-        save_data(traffic_data, data_file)
+        save_data(data_file, traffic_data, _counters)
     except IOError:
         problems.append("Cannot write in %s." % data_file)
         exit_status = 'UNKNOWN'
