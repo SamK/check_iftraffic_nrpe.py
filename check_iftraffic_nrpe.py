@@ -160,14 +160,17 @@ def exclude_device(exclude, data):
 
 
 def specify_device(devices, data):
-    """Remove the devices not included by the user"""
-    data2 = dict()
-    for i in devices:
-        if i in data:
-            data2[i] = data[i]
-        else:
-            raise DeviceError("Device %s not found." % i)
-    data = data2
+    """Only includes interfaces specified by the user"""
+
+    # be sure that the interfaces exist
+    for device in devices:
+        if device not in data:
+            raise DeviceError("Device %s not found." % device)
+
+    datatmp = data.copy()
+    for i in datatmp:
+        if not i in devices:
+            del data[i]
 
 
 def parse_arguments():
@@ -194,7 +197,7 @@ def parse_arguments():
                         (default 13107200 = 100Mb/s * 1024 * 1024 / 8. \
                         Yes, you must calculate.')
     g.add_argument('-i', '--interfaces', nargs='*',
-                   help='interface (default: all interfaces)')
+                   help='specify interfaces (default: all interfaces)')
     g.add_argument('-x', '--exclude', nargs='*',
                    help='if all interfaces, then exclude some')
     #p.add_argument('-u', '--units', type=str, choices=['G', 'M', 'k'],
@@ -244,8 +247,9 @@ def main():
     # only keep the wanted interfaces if specified
     if args.interfaces:
         try:
-            specify_interfaces(args.interfaces, traffic)
+            specify_device(args.interfaces, traffic)
         except DeviceError as e:
+            traffic = dict()
             message = str(e).replace("'", "")
             problems.append(message)
             exit_status = 'CRITICAL'
