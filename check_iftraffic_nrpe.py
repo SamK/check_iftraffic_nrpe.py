@@ -218,7 +218,7 @@ def main():
     data_file = '/var/tmp/traffic_stats.dat'
 
     args = parse_arguments()
-    bandwidth = args.bandwidth
+    bandwidth = int(args.bandwidth)
     problems = []
 
     # capture all the data from the system
