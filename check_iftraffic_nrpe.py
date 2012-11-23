@@ -289,8 +289,8 @@ def main():
             (warn level);(crit level);(min level);(max level)
             """
 
-            warn_level = args.warning * (bandwidth / 100)
-            crit_level = args.critical * (bandwidth / 100)
+            warn_level = int(args.warning) * (bandwidth / 100)
+            crit_level = int(args.critical) * (bandwidth / 100)
             min_level = 0.0
             max_level = bandwidth
 
