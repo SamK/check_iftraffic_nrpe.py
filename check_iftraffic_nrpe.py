@@ -17,7 +17,7 @@ import sys
 import time
 import argparse
 
-__version__ = '0.5'
+__version__ = '0.5.1'
 __author__ = 'Samuel Krieg'
 
 #
@@ -189,9 +189,9 @@ def parse_arguments():
     p.add_argument('-V', '--version', action='version',
                    help="shows program version", version=version_string)
     p.add_argument('-c', '--critical', default=98,
-                   help='Warning')
+                   help='Percentage for value CRITICAL.')
     p.add_argument('-w', '--warning', default=85,
-                   help='Warning')
+                   help='Percentage for value WARNING.')
     p.add_argument('-b', '--bandwidth', default=13107200,
                    help='Bandwidth in bytes/s \
                         (default 13107200 = 100Mb/s * 1024 * 1024 / 8. \
