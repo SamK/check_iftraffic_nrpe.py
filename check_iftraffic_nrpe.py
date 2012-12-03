@@ -17,7 +17,7 @@ import sys
 import time
 import argparse
 
-__version__ = '0.5.1'
+__version__ = '0.5.2'
 __author__ = 'Samuel Krieg'
 
 #
@@ -50,9 +50,13 @@ def max_counter():
         return 2 ** 32 - 1
 
 
-def calc_diff(value1, value2):
+def calc_diff(value1, uptime1, value2, uptime2):
     """Calculate the difference between two values.
     The function takes care of the maximum allowed value by the system"""
+    if uptime2 < uptime1:
+        """The host rebooted. The values are wrong anyway.
+        value2 is the closest."""
+        return value2
     if value1 > value2:
         return max_counter() - value1 + value2
     else:
@@ -63,6 +67,11 @@ def calc_diff(value1, value2):
 #
 # Nagios related functions
 #
+
+def uptime():
+    """Returns the uptime in seconds (float)"""
+    with open('/proc/uptime', 'r') as f:
+        return float(f.readline().split()[0])
 
 
 def get_perfdata(label, value, warn_level, crit_level, min_level, max_level):
@@ -102,20 +111,27 @@ def load_data(filename, columns):
     except IOError:
         return 0.0, values
     last_modification = os.path.getmtime(filename)
+    i=0
     for line in f:
-        data = line.split()
-        # get the device name
-        device_name = data.pop(0)
-        # transform values into integer
-        data = map(int, data)
-        # create a nice dictionnary of the values
-        values[device_name] = dict(zip(columns, data))
-    return last_modification, values
+        i+=1
+        if i == 1:
+            """ this line throws a ValueError exception on upgrade from v. 0.5.1"""
+            uptime0 = float(line)
+        else:
+            data = line.split()
+            # get the device name
+            device_name = data.pop(0)
+            # transform values into integer
+            data = map(int, data)
+            # create a nice dictionnary of the values
+            values[device_name] = dict(zip(columns, data))
+    return uptime0, last_modification, values
 
 
-def save_data(filename, data, columns):
+def save_data(filename, data, columns, uptime1):
     """save the data to a file."""
     f = open(filename, 'w')
+    f.write("%s\n" % uptime1)
     for device_name, if_data in data.iteritems():
         """write each line"""
         values = []
@@ -219,6 +235,7 @@ def main():
     exit_status = 'OK'
     # The temporary file where data will be stored between to metrics
     data_file = '/var/tmp/traffic_stats.dat'
+    uptime1 = uptime()
 
     args = parse_arguments()
     bandwidth = int(args.bandwidth)
@@ -228,11 +245,26 @@ def main():
     traffic = get_data()
 
     # load the previous data
-    time0, if_data0 = load_data(data_file, _counters)
+    if not os.path.exists(data_file):
+        """The script did not write the previous data.
+        This might be the first run."""
+        if not problems:
+            problems.append("First run.")
+            exit_status = 'UNKNOWN'
+    else:
+        try:
+            uptime0, time0, if_data0 = load_data(data_file, _counters)
+        except ValueError:
+            """This must be a script upgrade"""
+            os.remove(data_file)
+            if_data0 = None
+            time0 = time.time()
+            problems.append("Data file upgrade, skipping this run.")
+            exit_status = 'UNKNOWN'
 
     # save the data from the system
     try:
-        save_data(data_file, traffic, _counters)
+        save_data(data_file, traffic, _counters, uptime1)
     except IOError:
         problems.append("Cannot write in %s." % data_file)
         exit_status = 'UNKNOWN'
@@ -265,10 +297,10 @@ def main():
     else:
         for if_name, if_data1 in traffic.iteritems():
             # calculate the bytes
-            txbytes = calc_diff(if_data0[if_name]['txbytes'],
-                                if_data1['txbytes'])
-            rxbytes = calc_diff(if_data0[if_name]['rxbytes'],
-                                if_data1['rxbytes'])
+            txbytes = calc_diff(if_data0[if_name]['txbytes'], uptime0,
+                                if_data1['txbytes'], uptime1)
+            rxbytes = calc_diff(if_data0[if_name]['rxbytes'], uptime0,
+                                if_data1['rxbytes'], uptime1)
             # calculate the bytes per second
             txbytes = txbytes / elapsed_time
             rxbytes = rxbytes / elapsed_time
