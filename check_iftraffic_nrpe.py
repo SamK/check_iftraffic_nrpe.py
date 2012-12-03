@@ -111,11 +111,13 @@ def load_data(filename, columns):
     except IOError:
         return 0.0, values
     last_modification = os.path.getmtime(filename)
-    i=0
+    i = 0
     for line in f:
-        i+=1
+        i += 1
         if i == 1:
-            """ this line throws a ValueError exception on upgrade from v. 0.5.1"""
+            """ The uptime line has been added on version 0.5.2.
+            When upgrading from version 0.5.1 this line throws a
+            ValueError exception."""
             uptime0 = float(line)
         else:
             data = line.split()
