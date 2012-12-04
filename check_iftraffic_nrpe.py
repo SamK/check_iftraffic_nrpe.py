@@ -228,7 +228,11 @@ def parse_arguments():
 
 def main():
     """This main function is wayyyy too long"""
-    # These are the default values
+
+    #
+    # Default values
+    #
+
     # Nagios status codes
     _status_codes = {'OK': 0, 'WARNING': 1, 'CRITICAL': 2, 'UNKNOWN': 3}
     # counters needed for calculations
@@ -243,10 +247,16 @@ def main():
     bandwidth = int(args.bandwidth)
     problems = []
 
-    # capture all the data from the system
+    #
+    # Capture current data
+    #
+
     traffic = get_data()
 
-    # load the previous data
+    #
+    # Load previous data
+    #
+
     if not os.path.exists(data_file):
         """The script did not write the previous data.
         This might be the first run."""
@@ -264,12 +274,19 @@ def main():
             problems.append("Data file upgrade, skipping this run.")
             exit_status = 'UNKNOWN'
 
-    # save the data from the system
+    #
+    # Save current data
+    #
+
     try:
         save_data(data_file, traffic, _counters, uptime1)
     except IOError:
         problems.append("Cannot write in %s." % data_file)
         exit_status = 'UNKNOWN'
+
+    #
+    # Data filtering and preparation
+    #
 
     # get the time between the two metrics
     elapsed_time = time.time() - time0
@@ -288,6 +305,10 @@ def main():
             problems.append(message)
             exit_status = 'CRITICAL'
 
+    #
+    # Data analysis
+    #
+
     # calculate the results and the output
     perfdata = []
 
@@ -298,6 +319,11 @@ def main():
             problems.append("First run.")
     else:
         for if_name, if_data1 in traffic.iteritems():
+
+            #
+            # Traffic calculation
+            #
+
             # calculate the bytes
             txbytes = calc_diff(if_data0[if_name]['txbytes'], uptime0,
                                 if_data1['txbytes'], uptime1)
@@ -306,6 +332,11 @@ def main():
             # calculate the bytes per second
             txbytes = txbytes / elapsed_time
             rxbytes = rxbytes / elapsed_time
+
+            #
+            # Decide a Nagios status
+            #
+
             # determine a status for TX
             new_exit_status = nagios_value_status(txbytes, bandwidth,
                                                   args.critical, args.warning)
@@ -321,7 +352,11 @@ def main():
                                 (if_name, rxbytes, bandwidth))
             exit_status = worst_status(exit_status, new_exit_status)
 
-            """ get perfdata values
+            #
+            # Perfdata
+            #
+
+            """ How to get perfdata values:
             perfdata format (in 1 line):
             (user_readable_message_for_nagios) | (label)=(value)(metric);
             (warn level);(crit level);(min level);(max level)
@@ -337,7 +372,9 @@ def main():
             perfdata.append(get_perfdata('in-' + if_name, rxbytes, warn_level,
                             crit_level, min_level, max_level))
 
-    # This is the final output
+    #
+    # Program output
+    #
     print "TRAFFIC %s: %s | %s " % (exit_status, ' '.join(problems),
                                     ' '.join(perfdata))
 
