@@ -54,19 +54,19 @@ def calc_diff(value1, uptime1, value2, uptime2):
     """Calculate the difference between two values.
     The function takes care of the maximum allowed value by the system"""
     if uptime2 < uptime1:
-        """The host rebooted. The values are wrong anyway.
-        value2 is the closest."""
+        #"The host rebooted. The values are wrong anyway.
+        # value2 is the closest.
         return value2
     if value1 > value2:
         return max_counter() - value1 + value2
     else:
-        """ normal behaviour """
+        # normal behaviour
         return value2 - value1
-
 
 #
 # Nagios related functions
 #
+
 
 def uptime():
     """Returns the uptime in seconds (float)"""
@@ -98,10 +98,10 @@ def worst_status(status1, status2):
         if status1 == status or status2 == status:
             return status
 
-
 #
 # File functions
 #
+
 
 def load_data(filename, columns):
     """load the data from a file."""
@@ -236,13 +236,13 @@ def main():
     # Nagios status codes
     _status_codes = {'OK': 0, 'WARNING': 1, 'CRITICAL': 2, 'UNKNOWN': 3}
     # counters needed for calculations
+    # see get_data() to see how it is used
     _counters = ['rxbytes', 'txbytes']
     # The default exit status
     exit_status = 'OK'
     # The temporary file where data will be stored between to metrics
     data_file = '/var/tmp/traffic_stats.dat'
     uptime1 = uptime()
-
     args = parse_arguments()
     bandwidth = int(args.bandwidth)
     problems = []
@@ -375,6 +375,7 @@ def main():
     #
     # Program output
     #
+
     print "TRAFFIC %s: %s | %s " % (exit_status, ' '.join(problems),
                                     ' '.join(perfdata))
 
