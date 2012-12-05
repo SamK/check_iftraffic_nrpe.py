@@ -10,7 +10,7 @@ Prerequisites
 -------------
 
 * Python 2.x
-* The argparse library: `apt-get install python-argparse`
+* The python-argparse library
 
 Compatibility
 -------------
