@@ -17,7 +17,7 @@ import sys
 import time
 import argparse
 
-__version__ = '0.5.2'
+__version__ = '0.5.3'
 __author__ = 'Samuel Krieg'
 
 #
@@ -192,7 +192,7 @@ def specify_device(devices, data):
 
 
 def parse_arguments():
-    """Try to parse the command line arguments givent by the user"""
+    """Try to parse the command line arguments given by the user"""
     global __author__
     global __version__
 
@@ -263,6 +263,7 @@ def main():
         if not problems:
             problems.append("First run.")
             exit_status = 'UNKNOWN'
+            if_data0 = None
     else:
         try:
             uptime0, time0, if_data0 = load_data(data_file, _counters)
@@ -287,9 +288,6 @@ def main():
     #
     # Data filtering and preparation
     #
-
-    # get the time between the two metrics
-    elapsed_time = time.time() - time0
 
     # remove interfaces if needed
     if args.exclude:
@@ -318,6 +316,8 @@ def main():
         if not problems:
             problems.append("First run.")
     else:
+        # get the time between the two metrics
+        elapsed_time = time.time() - time0
         for if_name, if_data1 in traffic.iteritems():
 
             #
