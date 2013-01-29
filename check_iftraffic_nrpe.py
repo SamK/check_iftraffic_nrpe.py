@@ -12,7 +12,11 @@
 # Website: https://github.com/samyboy/check_iftraffic_nrpe.py
 #
 
+import array
+import fcntl
 import os
+import socket
+import struct
 import sys
 import time
 import argparse
@@ -165,6 +169,34 @@ def get_data():
             traffic[iface_name] = data
     return traffic
 
+class InterfaceDetection(object):
+    SIOCGIFHWADDR = 0x8927
+    IF_NAMESIZE = 16
+    families = {
+        1: "ethernet",
+        512: "ppp",
+        772: "loopback",
+        776: "sit",
+        0xfffe: "unspecified"}
+
+    def __init__(self):
+        self.socket = socket.socket(socket.AF_INET6, socket.SOCK_DGRAM, socket.IPPROTO_IP)
+
+    def __del__(self):
+        self.socket.close()
+
+    def query_linktype(self, interface):
+        buff = struct.pack("%ds1024x" % self.IF_NAMESIZE, interface)
+        buff = array.array("b", buff)
+        fcntl.ioctl(self.socket.fileno(), self.SIOCGIFHWADDR, buff, True)
+        fmt = "%dsH" % self.IF_NAMESIZE
+        _, family = struct.unpack(fmt, buff[:struct.calcsize(fmt)])
+        return self.families.get(family, "unknown")
+
+    def linktype_filter(self, linktypes, data):
+        for device in list(data):
+            if self.query_linktype(device) not in linktypes:
+                del data[device]
 
 #
 # User arguments related functions
@@ -210,6 +242,8 @@ def parse_arguments():
                    help='Percentage for value CRITICAL.')
     p.add_argument('-w', '--warning', default=85,
                    help='Percentage for value WARNING.')
+    p.add_argument('-l', '--linktype', nargs='*',
+                   help='only consider interfaces with given linktype')
     p.add_argument('-b', '--bandwidth', default=13107200,
                    help='Bandwidth in bytes/s \
                         (default 13107200 = 100Mb/s * 1024 * 1024 / 8. \
@@ -246,6 +280,7 @@ def main():
     args = parse_arguments()
     bandwidth = int(args.bandwidth)
     problems = []
+    ifdetect = InterfaceDetection()
 
     #
     # Capture current data
@@ -292,6 +327,9 @@ def main():
     # remove interfaces if needed
     if args.exclude:
         exclude_device(args.exclude, traffic)
+
+    if args.linktype:
+        ifdetect.linktype_filter(args.linktype, traffic)
 
     # only keep the wanted interfaces if specified
     if args.interfaces:
