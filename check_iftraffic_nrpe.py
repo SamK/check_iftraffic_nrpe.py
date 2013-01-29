@@ -320,6 +320,10 @@ def main():
         elapsed_time = time.time() - time0
         for if_name, if_data1 in traffic.iteritems():
 
+            if if_name not in if_data0:
+                # The interface was added between the last and the current run.
+                continue
+
             #
             # Traffic calculation
             #
