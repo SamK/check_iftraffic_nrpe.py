@@ -18,7 +18,7 @@ import sys
 import time
 import argparse
 
-__version__ = '0.5.3'
+__version__ = '0.6'
 __author__ = 'Samuel Krieg'
 
 #
@@ -223,6 +223,7 @@ def parse_arguments(default_values):
                    help='Percentage for value WARNING \
                         (default:  %(default)s).')
     p.add_argument('-b', '--bandwidth', default=default_values['bandwidth'],
+                   type=int,
                    help='Bandwidth in bytes/s \
                         (default  %(default)s) \
                         Example: \
@@ -263,7 +264,8 @@ def main(default_values):
     # The temporary file where data will be stored between to metrics
     uptime1 = uptime()
     args = parse_arguments(default_values)
-    bandwidth = int(args.bandwidth)
+
+    # this is a list of problems
     problems = []
 
     #
@@ -364,18 +366,18 @@ def main(default_values):
             #
 
             # determine a status for TX
-            new_exit_status = nagios_value_status(txbytes, bandwidth,
+            new_exit_status = nagios_value_status(txbytes, args.bandwidth,
                                                   args.critical, args.warning)
             if new_exit_status != 'OK':
                 problems.append("%s: %sMbs/%sMbs" % \
-                                (if_name, txbytes, bandwidth))
+                                (if_name, txbytes, args.bandwidth))
             exit_status = worst_status(exit_status, new_exit_status)
             # determine a status for RX
-            new_exit_status = nagios_value_status(rxbytes, bandwidth,
+            new_exit_status = nagios_value_status(rxbytes, args.bandwidth,
                                                   args.critical, args.warning)
             if new_exit_status != 'OK':
                 problems.append("%s: %sMbs/%sMbs" % \
-                                (if_name, rxbytes, bandwidth))
+                                (if_name, rxbytes, args.bandwidth))
             exit_status = worst_status(exit_status, new_exit_status)
 
             #
@@ -388,10 +390,10 @@ def main(default_values):
             (warn level);(crit level);(min level);(max level)
             """
 
-            warn_level = int(args.warning) * (bandwidth / 100)
-            crit_level = int(args.critical) * (bandwidth / 100)
+            warn_level = int(args.warning) * (args.bandwidth / 100)
+            crit_level = int(args.critical) * (args.bandwidth / 100)
             min_level = 0.0
-            max_level = bandwidth
+            max_level = args.bandwidth
 
             perfdata.append(get_perfdata('out-' + if_name, txbytes, warn_level,
                             crit_level, min_level, max_level))
