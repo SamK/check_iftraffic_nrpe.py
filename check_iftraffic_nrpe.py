@@ -13,6 +13,7 @@
 #
 
 import os
+import re
 import sys
 import time
 import argparse
@@ -176,6 +177,14 @@ def exclude_device(exclude, data):
         if device in data:
             del data[device]
 
+def excludere_device(exclude, data):
+    """Remove the interfaces excluded by the user"""
+    for devicere in exclude:
+        devicere = re.compile(devicere)
+        for device in list(data):
+            if devicere.match(device):
+                del data[device]
+
 
 def specify_device(devices, data):
     """Only includes interfaces specified by the user"""
@@ -218,6 +227,8 @@ def parse_arguments():
                    help='specify interfaces (default: all interfaces)')
     g.add_argument('-x', '--exclude', nargs='*',
                    help='if all interfaces, then exclude some')
+    g.add_argument('-X', '--excludere', nargs='*',
+                   help='if all interfaces, then exclude matching')
     #p.add_argument('-u', '--units', type=str, choices=['G', 'M', 'k'],
     #               help='units')
     #p.add_argument('-B', '--total', action=store_true,
@@ -292,6 +303,9 @@ def main():
     # remove interfaces if needed
     if args.exclude:
         exclude_device(args.exclude, traffic)
+
+    if args.excludere:
+        excludere_device(args.excludere, traffic)
 
     # only keep the wanted interfaces if specified
     if args.interfaces:
