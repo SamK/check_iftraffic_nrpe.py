@@ -200,7 +200,7 @@ def specify_device(devices, data):
             del data[i]
 
 
-def parse_arguments():
+def parse_arguments(default_values):
     """Try to parse the command line arguments given by the user"""
     global __author__
     global __version__
@@ -215,20 +215,29 @@ def parse_arguments():
 
     p.add_argument('-V', '--version', action='version',
                    help="shows program version", version=version_string)
-    p.add_argument('-c', '--critical', default=98,
-                   help='Percentage for value CRITICAL.')
-    p.add_argument('-w', '--warning', default=85,
-                   help='Percentage for value WARNING.')
-    p.add_argument('-b', '--bandwidth', default=13107200,
+    p.add_argument('-c', '--critical', default=default_values['critical'],
+                   type=int,
+                   help='Percentage for value CRITICAL \
+                        (default:  %(default)s).')
+    p.add_argument('-w', '--warning', default=85, type=int,
+                   help='Percentage for value WARNING \
+                        (default:  %(default)s).')
+    p.add_argument('-b', '--bandwidth', default=default_values['bandwidth'],
                    help='Bandwidth in bytes/s \
-                        (default 13107200 = 100Mb/s * 1024 * 1024 / 8. \
+                        (default  %(default)s) \
+                        Example: \
+                        13107200 = 100Mb/s * 1024 * 1024 / 8. \
                         Yes, you must calculate.')
+    p.add_argument('-f', '--data-file', default=default_values['data_file'],
+                   help='specify an alternate data file \
+                        (default: %(default)s)')
     g.add_argument('-i', '--interfaces', nargs='*',
                    help='specify interfaces (default: all interfaces)')
     g.add_argument('-x', '--exclude', nargs='*',
                    help='if all interfaces, then exclude some')
     g.add_argument('-X', '--excludere', nargs='*',
                    help='if all interfaces, then exclude matching')
+
     #p.add_argument('-u', '--units', type=str, choices=['G', 'M', 'k'],
     #               help='units')
     #p.add_argument('-B', '--total', action=store_true,
@@ -237,7 +246,7 @@ def parse_arguments():
     return p.parse_args()
 
 
-def main():
+def main(default_values):
     """This main function is wayyyy too long"""
 
     #
@@ -252,9 +261,8 @@ def main():
     # The default exit status
     exit_status = 'OK'
     # The temporary file where data will be stored between to metrics
-    data_file = '/var/tmp/traffic_stats.dat'
     uptime1 = uptime()
-    args = parse_arguments()
+    args = parse_arguments(default_values)
     bandwidth = int(args.bandwidth)
     problems = []
 
@@ -268,7 +276,7 @@ def main():
     # Load previous data
     #
 
-    if not os.path.exists(data_file):
+    if not os.path.exists(args.data_file):
         """The script did not write the previous data.
         This might be the first run."""
         if not problems:
@@ -277,10 +285,10 @@ def main():
             if_data0 = None
     else:
         try:
-            uptime0, time0, if_data0 = load_data(data_file, _counters)
+            uptime0, time0, if_data0 = load_data(args.data_file, _counters)
         except ValueError:
             """This must be a script upgrade"""
-            os.remove(data_file)
+            os.remove(args.data_file)
             if_data0 = None
             time0 = time.time()
             problems.append("Data file upgrade, skipping this run.")
@@ -291,9 +299,9 @@ def main():
     #
 
     try:
-        save_data(data_file, traffic, _counters, uptime1)
+        save_data(args.data_file, traffic, _counters, uptime1)
     except IOError:
-        problems.append("Cannot write in %s." % data_file)
+        problems.append("Cannot write in %s." % args.data_file)
         exit_status = 'UNKNOWN'
 
     #
@@ -401,4 +409,9 @@ def main():
     sys.exit(_status_codes[exit_status])
 
 if __name__ == '__main__':
-    main()
+    default_values = {}
+    default_values["warning"] = 85
+    default_values["critical"] = 98
+    default_values["data_file"] = '/var/tmp/traffic_stats.dat'
+    default_values["bandwidth"] = 13107200
+    main(default_values)
