@@ -123,7 +123,10 @@ def load_data(filename, columns):
         else:
             data = line.split()
             # get the device name
-            device_name = data.pop(0)
+            try:
+                device_name = data.pop(0)
+            except IndexError:
+                raise ValueError("data file truncated")
             # transform values into integer
             data = map(int, data)
             # create a nice dictionnary of the values
