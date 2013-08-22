@@ -1,16 +1,29 @@
 #!/usr/bin/python
-#
-# NRPE plugin to monitor network traffic
-#
-# This script is based on check_iftraffic_nrpe.pl by Van Dyck Sven.
-#
-# This file tends follow Python coding good practices:
-# pep8 --ignore=E111 --ignore=E221  --show-source --show-pep8 file.py
-# pylint -E file.py
-#
-#
-# Website: https://github.com/samyboy/check_iftraffic_nrpe.py
-#
+"""
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>
+
+
+NRPE plugin to monitor network traffic
+
+This script is based on check_iftraffic_nrpe.pl by Van Dyck Sven.
+
+This file tends follow Python coding good practices:
+pep8 --ignore=E111 --ignore=E221  --show-source --show-pep8 file.py
+pylint -E file.py
+
+Website: https://github.com/samyboy/check_iftraffic_nrpe.py
+"""
 
 import os
 import re
