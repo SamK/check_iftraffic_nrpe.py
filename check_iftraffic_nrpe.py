@@ -110,7 +110,7 @@ def load_data(filename, columns):
     try:
         f = open(filename)
     except IOError:
-        return 0.0, values
+        raise ValueError("failed to open data file")
     last_modification = os.path.getmtime(filename)
     i = 0
     for line in f:
@@ -123,11 +123,16 @@ def load_data(filename, columns):
         else:
             data = line.split()
             # get the device name
-            device_name = data.pop(0)
+            try:
+                device_name = data.pop(0)
+            except IndexError:
+                raise ValueError("data file truncated")
             # transform values into integer
             data = map(int, data)
             # create a nice dictionnary of the values
             values[device_name] = dict(zip(columns, data))
+    if i < 1:
+        raise ValueError("data file truncated")
     return uptime0, last_modification, values
 
 
