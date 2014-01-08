@@ -39,7 +39,43 @@ __version__ = '0.7'
 __author__ = 'Samuel Krieg'
 
 #
-# Exceptions
+# Classes
+#
+
+
+class InterfaceDetection(object):
+    SIOCGIFHWADDR = 0x8927
+    IF_NAMESIZE = 16
+    families = {
+        1: "ethernet",
+        512: "ppp",
+        772: "loopback",
+        776: "sit",
+        0xfffe: "unspecified"}
+
+    def __init__(self):
+        self.socket = socket.socket(socket.AF_INET6,
+                                    socket.SOCK_DGRAM,
+                                    socket.IPPROTO_IP)
+
+    def __del__(self):
+        self.socket.close()
+
+    def query_linktype(self, interface):
+        buff = struct.pack("%ds1024x" % self.IF_NAMESIZE, interface)
+        buff = array.array("b", buff)
+        fcntl.ioctl(self.socket.fileno(), self.SIOCGIFHWADDR, buff, True)
+        fmt = "%dsH" % self.IF_NAMESIZE
+        _, family = struct.unpack(fmt, buff[:struct.calcsize(fmt)])
+        return self.families.get(family, "unknown")
+
+    def linktype_filter(self, linktypes, data):
+        for device in list(data):
+            if self.query_linktype(device) not in linktypes:
+                del data[device]
+
+#
+# Exceptions classes
 #
 
 
@@ -49,6 +85,7 @@ class DeviceError(Exception):
 
     def __str__(self):
         return repr(self.value)
+
 
 #
 # Calc functions
@@ -188,44 +225,17 @@ def get_data():
             traffic[iface_name] = data
     return traffic
 
-class InterfaceDetection(object):
-    SIOCGIFHWADDR = 0x8927
-    IF_NAMESIZE = 16
-    families = {
-        1: "ethernet",
-        512: "ppp",
-        772: "loopback",
-        776: "sit",
-        0xfffe: "unspecified"}
-
-    def __init__(self):
-        self.socket = socket.socket(socket.AF_INET6, socket.SOCK_DGRAM, socket.IPPROTO_IP)
-
-    def __del__(self):
-        self.socket.close()
-
-    def query_linktype(self, interface):
-        buff = struct.pack("%ds1024x" % self.IF_NAMESIZE, interface)
-        buff = array.array("b", buff)
-        fcntl.ioctl(self.socket.fileno(), self.SIOCGIFHWADDR, buff, True)
-        fmt = "%dsH" % self.IF_NAMESIZE
-        _, family = struct.unpack(fmt, buff[:struct.calcsize(fmt)])
-        return self.families.get(family, "unknown")
-
-    def linktype_filter(self, linktypes, data):
-        for device in list(data):
-            if self.query_linktype(device) not in linktypes:
-                del data[device]
-
 #
 # User arguments related functions
 #
+
 
 def exclude_device(exclude, data):
     """Remove the interfaces excluded by the user"""
     for device in exclude:
         if device in data:
             del data[device]
+
 
 def excludere_device(exclude, data):
     """Remove the interfaces excluded by the user"""
