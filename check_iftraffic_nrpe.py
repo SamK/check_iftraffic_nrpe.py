@@ -424,8 +424,8 @@ def main(default_values):
             rxbytes = calc_diff(if_data0[if_name]['rxbytes'], uptime0,
                                 if_data1['rxbytes'], uptime1)
             # calculate the bytes per second
-            txbytes = txbytes / elapsed_time
-            rxbytes = rxbytes / elapsed_time
+            txbytes /= elapsed_time
+            rxbytes /= elapsed_time
 
             #
             # Decide a Nagios status
