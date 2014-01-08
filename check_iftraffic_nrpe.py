@@ -270,13 +270,12 @@ def parse_arguments(default_values):
                      "author": __author__}
 
     p = argparse.ArgumentParser(
-        description="NRPE plugin to monitor Linux network traffic",
-        formatter_class=argparse.RawDescriptionHelpFormatter)
+        description="NRPE plugin to monitor Linux network traffic")
 
-    g_com = p.add_argument_group("common options", "")
     g_nag = p.add_argument_group("nagios options", "")
     g_if  = p.add_argument_group("interface options", "")
-    g_filter   = p.add_argument_group("filtering options", 'The options "-i", \
+    g_filter   = p.add_argument_group("filtering options",
+                                      'The options "-i", \
                                       "-x" and "-X" are mutually exclusive')
     g_filter_x = g_filter.add_mutually_exclusive_group()
 
@@ -292,20 +291,21 @@ def parse_arguments(default_values):
     g_if.add_argument('-b', '--bandwidth', default=default_values['bandwidth'],
                       type=int,
                       help="Define the maximum bandwidth in bytes/s \
-                           (default  %(default)s)\
+                           (default %(default)s). \
                            Example: \
-                           13107200 = 100Mb/s * 1024 * 1024 / 8. \
+                           100Mb/s:  100 * 1024 * 1024 / 8 = 13107200. \
+                           1000Mb/s: 1000 * 1024 * 1024 / 8 = 131072000. \
                            Yes, you must calculate.")
     g_filter.add_argument('-l', '--linktype', nargs='*',
                           help='Only consider interfaces with given linktype. \
                                Possible values are "ethernet", "loopback", \
                                "ppp", "sit"')
-    g_com.add_argument('-f', '--data-file',
-                       default=default_values['data_file'],
-                       help='specify an alternate data file \
-                            (default: %(default)s)')
+    p.add_argument('-f', '--data-file',
+                   default=default_values['data_file'],
+                   help='specify an alternate data file \
+                        (default: %(default)s)')
     g_filter_x.add_argument('-i', '--interfaces', nargs='*',
-                            help='specify interfaces (default: all)')
+                            help='consider specified interfaces (default: all)')
     g_filter_x.add_argument('-x', '--exclude', nargs='*',
                             help='exclude interface specified by name')
     g_filter_x.add_argument('-X', '--excludere', nargs='*',
