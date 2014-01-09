@@ -206,7 +206,7 @@ def save_data(filename, data, columns, uptime1):
 # Network interfaces functions
 #
 
-def get_data():
+def get_data(counters):
     """list all the network data"""
     traffic = dict()
     my_file = open('/proc/net/dev')
@@ -218,10 +218,9 @@ def get_data():
             iface_name, iface_data = line.split(':')
             iface_name = iface_name.strip()
             data_values = iface_data.split()
-            # receive: column 0
-            # transmit: column 8
-            data['rxbytes'] = int(data_values[0])
-            data['txbytes'] = int(data_values[8])
+
+            for counter in counters:
+                data[counter['name']] = int(data_values[counter['column']])
             traffic[iface_name] = data
     return traffic
 
@@ -345,7 +344,7 @@ def main(default_values):
     # Capture current data
     #
 
-    traffic = get_data()
+    traffic = get_data(default_values['counters'])
 
     #
     # Load previous data
