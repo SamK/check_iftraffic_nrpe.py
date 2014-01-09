@@ -330,12 +330,7 @@ def main(default_values):
     _status_codes = {'OK': 0, 'WARNING': 1, 'CRITICAL': 2, 'UNKNOWN': 3}
     # counters needed for calculations
     # see get_data() to see how it is used
-    _counters = [
-        {"name": "rxbytes", "prefix": "in-"},
-        {"name": "txbytes", "prefix": "out-"}
-    ]
-    # the names of the counters only (based on _counters)
-    _counter_names = [ d['name'] for d in _counters ]
+    counter_names = [ d['name'] for d in  default_values['counters'] ]
     # The default exit status
     exit_status = 'OK'
     # The temporary file where data will be stored between to metrics
@@ -365,7 +360,7 @@ def main(default_values):
             if_data0 = None
     else:
         try:
-            uptime0, time0, if_data0 = load_data(args.data_file, _counter_names)
+            uptime0, time0, if_data0 = load_data(args.data_file, counter_names)
         except ValueError:
             """This must be a script upgrade"""
             os.remove(args.data_file)
@@ -379,7 +374,7 @@ def main(default_values):
     #
 
     try:
-        save_data(args.data_file, traffic, _counter_names, uptime1)
+        save_data(args.data_file, traffic, counter_names, uptime1)
     except IOError:
         problems.append("Cannot write in %s." % args.data_file)
         exit_status = 'UNKNOWN'
@@ -432,7 +427,7 @@ def main(default_values):
             #
             # Traffic calculation
             #
-            for counter in _counters:
+            for counter in  default_values['counters']:
 
                 # calculate the bytes
                 units = calc_diff(if_data0[if_name][counter['name']], uptime0,
@@ -486,4 +481,10 @@ if __name__ == '__main__':
     default_values["critical"] = 98
     default_values["data_file"] = '/var/tmp/traffic_stats.dat'
     default_values["bandwidth"] = 13107200
+
+    default_values["counters"] = [
+        {"name": "rxbytes", "prefix": "in-", "column": 0},
+        {"name": "txbytes", "prefix": "out-", "column": 8}
+    ]
+
     main(default_values)
