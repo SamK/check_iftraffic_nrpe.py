@@ -330,7 +330,12 @@ def main(default_values):
     _status_codes = {'OK': 0, 'WARNING': 1, 'CRITICAL': 2, 'UNKNOWN': 3}
     # counters needed for calculations
     # see get_data() to see how it is used
-    _counters = ['rxbytes', 'txbytes']
+    _counters = [
+        {"name": "rxbytes", "prefix": "in-"},
+        {"name": "txbytes", "prefix": "out-"}
+    ]
+    # the names of the counters only (based on _counters)
+    _counter_names = [ d['name'] for d in _counters ]
     # The default exit status
     exit_status = 'OK'
     # The temporary file where data will be stored between to metrics
@@ -360,7 +365,7 @@ def main(default_values):
             if_data0 = None
     else:
         try:
-            uptime0, time0, if_data0 = load_data(args.data_file, _counters)
+            uptime0, time0, if_data0 = load_data(args.data_file, _counter_names)
         except ValueError:
             """This must be a script upgrade"""
             os.remove(args.data_file)
@@ -374,7 +379,7 @@ def main(default_values):
     #
 
     try:
-        save_data(args.data_file, traffic, _counters, uptime1)
+        save_data(args.data_file, traffic, _counter_names, uptime1)
     except IOError:
         problems.append("Cannot write in %s." % args.data_file)
         exit_status = 'UNKNOWN'
@@ -427,54 +432,43 @@ def main(default_values):
             #
             # Traffic calculation
             #
+            for counter in _counters:
 
-            # calculate the bytes
-            txbytes = calc_diff(if_data0[if_name]['txbytes'], uptime0,
-                                if_data1['txbytes'], uptime1)
-            rxbytes = calc_diff(if_data0[if_name]['rxbytes'], uptime0,
-                                if_data1['rxbytes'], uptime1)
-            # calculate the bytes per second
-            txbytes /= elapsed_time
-            rxbytes /= elapsed_time
+                # calculate the bytes
+                units = calc_diff(if_data0[if_name][counter['name']], uptime0,
+                                  if_data1[counter['name']], uptime1)
 
-            #
-            # Decide a Nagios status
-            #
+                # calculate the bytes per second
+                units /= elapsed_time
 
-            # determine a status for TX
-            new_exit_status = nagios_value_status(txbytes, args.bandwidth,
-                                                  args.critical, args.warning)
-            if new_exit_status != 'OK':
-                problems.append("%s: %sMbs/%sMbs" % \
-                                (if_name, txbytes, args.bandwidth))
-            exit_status = worst_status(exit_status, new_exit_status)
-            # determine a status for RX
-            new_exit_status = nagios_value_status(rxbytes, args.bandwidth,
-                                                  args.critical, args.warning)
-            if new_exit_status != 'OK':
-                problems.append("%s: %sMbs/%sMbs" % \
-                                (if_name, rxbytes, args.bandwidth))
-            exit_status = worst_status(exit_status, new_exit_status)
+                #
+                # Decide a Nagios status
+                #
 
-            #
-            # Perfdata
-            #
+                new_exit_status = nagios_value_status(units, args.bandwidth,
+                                                      args.critical, args.warning)
+                if new_exit_status != 'OK':
+                    problems.append("%s: %sMbs/%sMbs" % \
+                                    (if_name, units, args.bandwidth))
+                exit_status = worst_status(exit_status, new_exit_status)
 
-            """ How to get perfdata values:
-            perfdata format (in 1 line):
-            (user_readable_message_for_nagios) | (label)=(value)(metric);
-            (warn level);(crit level);(min level);(max level)
-            """
+                #
+                # Perfdata
+                #
 
-            warn_level = int(args.warning) * (args.bandwidth / 100)
-            crit_level = int(args.critical) * (args.bandwidth / 100)
-            min_level = 0.0
-            max_level = args.bandwidth
+                """ How to get perfdata values:
+                perfdata format (in 1 line):
+                (user_readable_message_for_nagios) | (label)=(value)(metric);
+                (warn level);(crit level);(min level);(max level)
+                """
 
-            perfdata.append(get_perfdata('out-' + if_name, txbytes, warn_level,
-                            crit_level, min_level, max_level))
-            perfdata.append(get_perfdata('in-' + if_name, rxbytes, warn_level,
-                            crit_level, min_level, max_level))
+                warn_level = int(args.warning) * (args.bandwidth / 100)
+                crit_level = int(args.critical) * (args.bandwidth / 100)
+                min_level = 0.0
+                max_level = args.bandwidth
+
+                perfdata.append(get_perfdata(counter['prefix'] + if_name, units, warn_level,
+                                crit_level, min_level, max_level))
 
     #
     # Program output
