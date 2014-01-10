@@ -54,9 +54,14 @@ class InterfaceDetection(object):
         0xfffe: "unspecified"}
 
     def __init__(self):
-        self.socket = socket.socket(socket.AF_INET6,
-                                    socket.SOCK_DGRAM,
-                                    socket.IPPROTO_IP)
+        try:
+            self.socket = socket.socket(socket.AF_INET,
+                                        socket.SOCK_DGRAM,
+                                        socket.IPPROTO_IP)
+        except socket.error:
+            self.socket = socket.socket(socket.AF_INET6,
+                                        socket.SOCK_DGRAM,
+                                        socket.IPPROTO_IP)
 
     def __del__(self):
         self.socket.close()
