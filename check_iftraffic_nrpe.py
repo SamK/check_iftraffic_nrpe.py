@@ -79,6 +79,85 @@ class InterfaceDetection(object):
             if self.query_linktype(device) not in linktypes:
                 del data[device]
 
+
+class DataFile():
+    """data file format:
+        - line 1: uptime
+        - rest: data
+    """
+
+    def __init__(self, filename):
+        self.filename = filename
+        self.uptime = None
+        self.data = None
+
+
+    def mtime(self):
+        return os.path.getmtime(self.filename)
+
+    def read(self):
+        content = open(self.filename, "r").readlines()
+        self.uptime = content[0]
+        self.data = "".join(content[1:])
+        return self.uptime, self.data
+
+
+    def write(self):
+        if not self.uptime:
+            self.uptime = self.uptime()
+
+        f = open(self.filename, 'w')
+        f.write("%s\n" % self.uptime)
+        f.write(self.data)
+
+
+class ProcNetDev():
+    """http://stackoverflow.com/a/1052628/238913
+
+       Transform the /proc/net/dev file into a Python readable format
+    """
+
+    def __init__(self):
+        self.filename = '/proc/net/dev'
+        self.interfaces = {}
+        self.content = None
+
+    def parse(self, data = None):
+        if data is None:
+            data = self.read()
+
+        lines = data.splitlines()
+
+        # retrive the titles
+        titles = lines[1]
+        _, rx_titles , tx_titles = titles.split("|")
+
+        # transorm the titles into arrays
+        rx_titles = map(lambda a:"rx_"+a, rx_titles.split())
+        tx_titles = map(lambda a:"tx_"+a, tx_titles.split())
+
+        # append the titles together
+        titles = rx_titles + tx_titles
+
+        # gather the values
+        for line in lines[2:]:
+            if line.find(":") < 0: continue # impossible?
+            # get the interface name
+            if_name, data = line.split(":")
+            if_name = if_name.strip()
+            # get the values
+            values =  [int(x) for x in data.split()]
+            # bring titles and values together to make interface data
+            if_data = dict(zip(titles, values))
+            self.interfaces[if_name] = if_data
+        return self.interfaces
+
+    def read(self, filename=None):
+        if filename is None: filename = self.filename
+        self.content = open(filename, "r").read()
+        return self.content
+
+
 #
 # Exceptions classes
 #
@@ -90,6 +169,12 @@ class DeviceError(Exception):
 
     def __str__(self):
         return repr(self.value)
+
+
+def uptime():
+    """Returns the uptime in seconds (float)"""
+    with open('/proc/uptime', 'r') as f:
+        return float(f.readline().split()[0])
 
 
 #
@@ -128,12 +213,6 @@ def calc_diff(value1, uptime1, value2, uptime2):
 #
 
 
-def uptime():
-    """Returns the uptime in seconds (float)"""
-    with open('/proc/uptime', 'r') as f:
-        return float(f.readline().split()[0])
-
-
 def get_perfdata(label, value, warn_level, crit_level, min_level, max_level):
     """Return the perfdata string of an item"""
     return ("%(label)s=%(value).2f;" % {'label': label, 'value': value} + \
@@ -158,76 +237,6 @@ def worst_status(status1, status2):
         if status1 == status or status2 == status:
             return status
 
-#
-# File functions
-#
-
-
-def load_data(filename, columns):
-    """load the data from a file."""
-    values = dict()
-    try:
-        f = open(filename)
-    except IOError:
-        raise ValueError("failed to open data file")
-    last_modification = os.path.getmtime(filename)
-    i = 0
-    for line in f:
-        i += 1
-        if i == 1:
-            """ The uptime line has been added on version 0.5.2.
-            When upgrading from version 0.5.1 this line throws a
-            ValueError exception."""
-            uptime0 = float(line)
-        else:
-            data = line.split()
-            # get the device name
-            try:
-                device_name = data.pop(0)
-            except IndexError:
-                raise ValueError("data file truncated")
-            # transform values into integer
-            data = map(int, data)
-            # create a nice dictionnary of the values
-            values[device_name] = dict(zip(columns, data))
-    if i < 1:
-        raise ValueError("data file truncated")
-    return uptime0, last_modification, values
-
-
-def save_data(filename, data, columns, uptime1):
-    """save the data to a file."""
-    f = open(filename, 'w')
-    f.write("%s\n" % uptime1)
-    for device_name, if_data in data.iteritems():
-        """write each line"""
-        values = []
-        for name in columns:
-            values.append(str(if_data[name]))
-        f.write("%s\t%s\n" % (device_name, "\t".join(values)))
-
-
-#
-# Network interfaces functions
-#
-
-def get_data(counters):
-    """list all the network data"""
-    traffic = dict()
-    my_file = open('/proc/net/dev')
-    i = 0
-    for line in my_file:
-        i += 1
-        if i > 2:  # skip the 2 first lines
-            data = dict()
-            iface_name, iface_data = line.split(':')
-            iface_name = iface_name.strip()
-            data_values = iface_data.split()
-
-            for counter in counters:
-                data[counter['name']] = int(data_values[counter['column']])
-            traffic[iface_name] = data
-    return traffic
 
 #
 # User arguments related functions
@@ -335,10 +344,10 @@ def main(default_values):
     # counters needed for calculations
     # see get_data() to see how it is used
     counter_names = [ d['name'] for d in  default_values['counters'] ]
+    if_data0 = None
     # The default exit status
     exit_status = 'OK'
     # The temporary file where data will be stored between to metrics
-    uptime1 = uptime()
     args = parse_arguments(default_values)
 
     # this is a list of problems
@@ -346,14 +355,19 @@ def main(default_values):
     ifdetect = InterfaceDetection()
 
     #
-    # Capture current data
+    # Read current data
     #
 
-    traffic = get_data(default_values['counters'])
+    procnetdev1 = ProcNetDev().read()
+    uptime1 = uptime()
+    traffic1 = ProcNetDev().parse(procnetdev1)
+    if_data1 = traffic1 # FIXME: remove
 
     #
-    # Load previous data
+    # Read previous data
     #
+
+    datafile = DataFile(args.data_file)
 
     if not os.path.exists(args.data_file):
         """The script did not write the previous data.
@@ -361,10 +375,11 @@ def main(default_values):
         if not problems:
             problems.append("First run.")
             exit_status = 'UNKNOWN'
-            if_data0 = None
     else:
+        uptime0, procnetdev0 = datafile.read()
+        time0 = datafile.mtime()
         try:
-            uptime0, time0, if_data0 = load_data(args.data_file, counter_names)
+            if_data0 = ProcNetDev().parse(procnetdev0)
         except ValueError:
             """This must be a script upgrade"""
             os.remove(args.data_file)
@@ -377,11 +392,17 @@ def main(default_values):
     # Save current data
     #
 
+    # I can safeuly reuse the datafile object
+    datafile.uptime = uptime1
+    datafile.data = procnetdev1
+
     try:
-        save_data(args.data_file, traffic, counter_names, uptime1)
+        datafile.write()
     except IOError:
         problems.append("Cannot write in %s." % args.data_file)
         exit_status = 'UNKNOWN'
+
+    # parse data
 
     #
     # Data filtering and preparation
@@ -389,18 +410,18 @@ def main(default_values):
 
     # remove interfaces if needed
     if args.exclude:
-        exclude_device(args.exclude, traffic)
+        exclude_device(args.exclude, traffic1)
 
     if args.excludere:
-        excludere_device(args.excludere, traffic)
+        excludere_device(args.excludere, traffic1)
 
     if args.linktype:
-        ifdetect.linktype_filter(args.linktype, traffic)
+        ifdetect.linktype_filter(args.linktype, traffic1)
 
     # only keep the wanted interfaces if specified
     if args.interfaces:
         try:
-            specify_device(args.interfaces, traffic)
+            specify_device(args.interfaces, traffic1)
         except DeviceError as e:
             traffic = dict()
             message = str(e).replace("'", "")
@@ -422,7 +443,7 @@ def main(default_values):
     else:
         # get the time between the two metrics
         elapsed_time = time.time() - time0
-        for if_name, if_data1 in traffic.iteritems():
+        for if_name, if_data1 in traffic1.iteritems():
 
             if if_name not in if_data0:
                 # The interface was added between the last and the current run.
@@ -487,8 +508,8 @@ if __name__ == '__main__':
     default_values["bandwidth"] = 13107200
 
     default_values["counters"] = [
-        {"name": "rxbytes", "prefix": "in-", "column": 0},
-        {"name": "txbytes", "prefix": "out-", "column": 8}
+        {"name": "rx_bytes", "prefix": "in-", "column": 0},
+        {"name": "tx_bytes", "prefix": "out-", "column": 8}
     ]
 
     main(default_values)
