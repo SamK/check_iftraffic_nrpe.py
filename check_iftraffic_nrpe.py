@@ -466,7 +466,7 @@ def main(default_values):
 
                 # calculate the bytes per second
                 units /= elapsed_time
-                print counter
+
                 #
                 # Decide a Nagios status
                 #
