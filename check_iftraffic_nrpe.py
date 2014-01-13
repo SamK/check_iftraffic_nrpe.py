@@ -97,14 +97,14 @@ class DataFile():
 
     def read(self):
         content = open(self.filename, "r").readlines()
-        self.uptime = content[0]
+        self.uptime = float(content[0])
         self.data = "".join(content[1:])
         return self.uptime, self.data
 
 
     def write(self):
         if not self.uptime:
-            self.uptime = self.uptime()
+            self.uptime = str(self.uptime())
 
         f = open(self.filename, 'w')
         f.write("%s\n" % self.uptime)
@@ -393,6 +393,7 @@ def main(default_values):
     #
 
     # I can safeuly reuse the datafile object
+    datafile = DataFile(args.data_file)
     datafile.uptime = uptime1
     datafile.data = procnetdev1
 
@@ -460,7 +461,7 @@ def main(default_values):
 
                 # calculate the bytes per second
                 units /= elapsed_time
-
+                print counter
                 #
                 # Decide a Nagios status
                 #
