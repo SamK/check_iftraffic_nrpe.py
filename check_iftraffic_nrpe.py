@@ -113,11 +113,16 @@ def max_counter():
 def calc_diff(value1, uptime1, value2, uptime2):
     """Calculate the difference between two values.
     The function takes care of the maximum allowed value by the system"""
+    # throw error if not numeric type
+    for val in [value1, uptime1, value2, uptime2]:
+        if not (isinstance(val, int) or isinstance(val, float)):
+            raise ValueError
     if uptime2 < uptime1:
         #"The host rebooted. The values are wrong anyway.
         # value2 is the closest.
         return value2
     if value1 > value2:
+        # the counter did a reset. I hope that max_counter() is doint right
         return max_counter() - value1 + value2
     else:
         # normal behaviour
