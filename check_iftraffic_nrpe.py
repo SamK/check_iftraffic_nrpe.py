@@ -468,7 +468,7 @@ def main(default_values):
                 new_exit_status = nagios_value_status(units, args.bandwidth,
                                                       args.critical, args.warning)
                 if new_exit_status != 'OK':
-                    problems.append("%s: %sMbs/%sMbs" % \
+                    problems.append("%s: %s/%s" % \
                                     (if_name, units, args.bandwidth))
                 exit_status = worst_status(exit_status, new_exit_status)
 
