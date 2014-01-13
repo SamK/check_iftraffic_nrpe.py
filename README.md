@@ -8,6 +8,7 @@ Note that only myself tested this script so far. Feedbacks are very welcome.
 
 Download
 --------
+
 * The latest stable release can be found here: https://github.com/samyboy/check_iftraffic_nrpe.py/releases
 
 Prerequisites
