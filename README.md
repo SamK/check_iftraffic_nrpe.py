@@ -59,15 +59,15 @@ Note that I must understand your code.
 Development
 ----------
 
-* Print library documentation
+Print library documentation:
 
     LIB="check_iftraffic_nrpe" ;  python -c "import sys; sys.path.insert(0,'.'); import $LIB; import pydoc; pydoc.doc($LIB)"
 
-* Check Python syntax
+Check Python syntax:
 
     pylint -E file.py
 
-* Follow PEP8 style guide
+Follow PEP8 style guide:
 
     pep8 --ignore=E111,E221,E701 --show-source --show-pep8 check_iftraffic_nrpe.py
 
