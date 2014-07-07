@@ -4,12 +4,11 @@ check_iftraffic_nrpe.py
 This is a Nagios plugin to check network traffic with NRPE on Linux.
 This script has been created because I like writing Python scripts.
 
-Note that only myself tested this script so far. Feedbacks are very welcome.
-
-Download
+Installation
 --------
 
 * The latest stable release can be found here: https://github.com/samyboy/check_iftraffic_nrpe.py/releases
+* Copy the file `check_iftraffic_nrpe.py` into the appropriate Nagios folder (example: `/usr/lib/nagios/plugins/`)
 
 Prerequisites
 -------------
@@ -49,6 +48,28 @@ Define a Gigabit interface (the value must be in bytes):
 
     check_iftraffic_nrpe.py --bandwidth=131072000
 
+
+Contributing
+------------
+
+* Submit bugs if you find some.
+* Submit pull requests and I will happily merge them *when I have free time*.
+Note that I must understand your code.
+
+Development
+----------
+
+* Print library documentation
+
+    LIB="check_iftraffic_nrpe" ;  python -c "import sys; sys.path.insert(0,'.'); import $LIB; import pydoc; pydoc.doc($LIB)"
+
+* Check Python syntax
+
+    pylint -E file.py
+
+* Follow PEP8 style guide
+
+    pep8 --ignore=E111,E221,E701 --show-source --show-pep8 check_iftraffic_nrpe.py
 
 Author
 ------
