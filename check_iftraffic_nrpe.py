@@ -19,7 +19,7 @@ NRPE plugin to monitor network traffic
 This script is based on check_iftraffic_nrpe.pl by Van Dyck Sven.
 
 This file tends follow Python coding good practices:
-pep8 --ignore=E111 --ignore=E221  --show-source --show-pep8 file.py
+pep8 --ignore=E111,E221,E701 --show-source --show-pep8 file.py
 pylint -E file.py
 
 Website: https://github.com/samyboy/check_iftraffic_nrpe.py
@@ -105,7 +105,6 @@ class DataFile():
         self.uptime = None
         self.data = None
 
-
     def mtime(self):
         return os.path.getmtime(self.filename)
 
@@ -114,7 +113,6 @@ class DataFile():
         self.uptime = float(content[0])
         self.data = "".join(content[1:])
         return self.uptime, self.data
-
 
     def write(self):
         if not self.uptime:
@@ -136,7 +134,7 @@ class ProcNetDev():
         self.interfaces = {}
         self.content = None
 
-    def parse(self, data = None):
+    def parse(self, data=None):
         if data is None:
             data = self.read()
 
@@ -144,23 +142,23 @@ class ProcNetDev():
 
         # retrive the titles
         titles = lines[1]
-        _, rx_titles , tx_titles = titles.split("|")
+        _, rx_titles, tx_titles = titles.split("|")
 
         # transorm the titles into arrays
-        rx_titles = map(lambda a:"rx_"+a, rx_titles.split())
-        tx_titles = map(lambda a:"tx_"+a, tx_titles.split())
+        rx_titles = map(lambda a: "rx_" + a, rx_titles.split())
+        tx_titles = map(lambda a: "tx_" + a, tx_titles.split())
 
         # append the titles together
         titles = rx_titles + tx_titles
 
         # gather the values
         for line in lines[2:]:
-            if line.find(":") < 0: continue # impossible?
+            if line.find(":") < 0: continue  # impossible?
             # get the interface name
             if_name, data = line.split(":")
             if_name = if_name.strip()
             # get the values
-            values =  [int(x) for x in data.split()]
+            values = [int(x) for x in data.split()]
             # bring titles and values together to make interface data
             if_data = dict(zip(titles, values))
             self.interfaces[if_name] = if_data
@@ -328,7 +326,8 @@ def parse_arguments(default_values):
                    help='specify an alternate data file \
                         (default: %(default)s)')
     g_filter_x.add_argument('-i', '--interfaces', nargs='*',
-                            help='consider specified interfaces (default: all)')
+                            help='consider specified interfaces (default: \
+                            all)')
     g_filter_x.add_argument('-x', '--exclude', nargs='*',
                             help='exclude interface specified by name')
     g_filter_x.add_argument('-X', '--excludere', nargs='*',
@@ -353,7 +352,7 @@ def main(default_values):
     _status_codes = {'OK': 0, 'WARNING': 1, 'CRITICAL': 2, 'UNKNOWN': 3}
     # counters needed for calculations
     # see get_data() to see how it is used
-    counter_names = [ d['name'] for d in  default_values['counters'] ]
+    counter_names = [d['name'] for d in  default_values['counters']]
     if_data0 = None
     # The default exit status
     exit_status = 'OK'
@@ -371,7 +370,7 @@ def main(default_values):
     procnetdev1 = ProcNetDev().read()
     uptime1 = uptime()
     traffic1 = ProcNetDev().parse(procnetdev1)
-    if_data1 = traffic1 # FIXME: remove
+    if_data1 = traffic1  # FIXME: remove
 
     #
     # Read previous data
@@ -477,7 +476,8 @@ def main(default_values):
                 #
 
                 new_exit_status = nagios_value_status(units, args.bandwidth,
-                                                      args.critical, args.warning)
+                                                      args.critical,
+                                                      args.warning)
                 if new_exit_status != 'OK':
                     problems.append("%s: %s/%s" % \
                                     (if_name, units, args.bandwidth))
@@ -498,8 +498,9 @@ def main(default_values):
                 min_level = 0.0
                 max_level = args.bandwidth
 
-                perfdata.append(get_perfdata(counter['prefix'] + if_name, units, warn_level,
-                                crit_level, min_level, max_level))
+                perfdata.append(get_perfdata(counter['prefix'] + if_name,
+                                units, warn_level, crit_level, min_level,
+                                max_level))
 
     #
     # Program output
