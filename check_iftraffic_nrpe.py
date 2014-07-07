@@ -38,6 +38,20 @@ import argparse
 __version__ = '0.7.3'
 __author__ = 'Samuel Krieg'
 
+
+#
+# Exceptions
+#
+
+
+class DeviceError(Exception):
+    def __init__(self, value):
+        self.value = value
+
+    def __str__(self):
+        return repr(self.value)
+
+
 #
 # Classes
 #
@@ -159,17 +173,8 @@ class ProcNetDev():
 
 
 #
-# Exceptions classes
+# system functions
 #
-
-
-class DeviceError(Exception):
-    def __init__(self, value):
-        self.value = value
-
-    def __str__(self):
-        return repr(self.value)
-
 
 def uptime():
     """Returns the uptime in seconds (float)"""
@@ -178,7 +183,7 @@ def uptime():
 
 
 #
-# Calc functions
+# Calculation functions
 #
 
 
