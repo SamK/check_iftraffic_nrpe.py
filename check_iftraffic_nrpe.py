@@ -13,14 +13,9 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-
 NRPE plugin to monitor network traffic
 
 This script is based on check_iftraffic_nrpe.pl by Van Dyck Sven.
-
-This file tends follow Python coding good practices:
-pep8 --ignore=E111 --ignore=E221  --show-source --show-pep8 file.py
-pylint -E file.py
 
 Website: https://github.com/samyboy/check_iftraffic_nrpe.py
 """
