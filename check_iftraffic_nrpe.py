@@ -198,7 +198,9 @@ def calc_diff(value1, uptime1, value2, uptime2):
     The function takes care of the maximum allowed value by the system"""
     # throw error if not numeric type
     for val in [value1, uptime1, value2, uptime2]:
-        if not (isinstance(val, int) or isinstance(val, float)):
+        if not (isinstance(val, int) or
+                isinstance(val, float) or
+                isinstance(val, long)):
             raise ValueError
     if uptime2 < uptime1:
         #"The host rebooted. The values are wrong anyway.
