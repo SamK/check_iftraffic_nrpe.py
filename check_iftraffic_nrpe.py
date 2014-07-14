@@ -30,7 +30,7 @@ import sys
 import time
 import argparse
 
-__version__ = '0.7.3'
+__version__ = '0.7.4'
 __author__ = 'Samuel Krieg'
 
 
@@ -187,10 +187,7 @@ def bits2bytes(bits):
 
 def max_counter():
     """Define the maximum allowed value by the system"""
-    if sys.maxsize > 2 ** 32:
-        return 2 ** 64 - 1
-    else:
-        return 2 ** 32 - 1
+    return sys.maxsize * 2 + 1
 
 
 def calc_diff(value1, uptime1, value2, uptime2):
