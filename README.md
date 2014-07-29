@@ -13,17 +13,16 @@ Installation
 Prerequisites
 -------------
 
-* Python 2.x
+* Python
 * The python-argparse library
 
 Compatibility
 -------------
 
-This script has been tested under Python 2.x only.
-I don't know if it works unders Python 3.
+* This script has been tested under Python 2.7 only.
+* It is not compatible with Python 2.4
 
-This script has been tested under Nagios 3.x only.
-I have no idea how it behaves with older versions.
+* It has been tested under Nagios 3.x only.
 
 Usage examples
 --------------
