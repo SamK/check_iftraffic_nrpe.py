@@ -344,7 +344,6 @@ def parse_arguments(default_values):
 
     return p.parse_args()
 
-
 def main(default_values):
     """This main function is wayyyy too long"""
 
@@ -469,22 +468,22 @@ def main(default_values):
             for counter in default_values['counters']:
 
                 # calculate the bytes
-                units = calc_diff(if_data0[if_name][counter['name']], uptime0,
+                value = calc_diff(if_data0[if_name][counter['name']], uptime0,
                                   if_data1[counter['name']], uptime1)
 
                 # calculate the bytes per second
-                units /= elapsed_time
+                value /= elapsed_time
 
                 #
                 # Decide a Nagios status
                 #
 
-                new_exit_status = nagios_value_status(units, args.bandwidth,
+                new_exit_status = nagios_value_status(value, args.bandwidth,
                                                       args.critical,
                                                       args.warning)
                 if new_exit_status != 'OK':
                     problems.append("%s: %s/%s" %
-                                    (if_name, units, args.bandwidth))
+                                    (if_name, value, args.bandwidth))
                 exit_status = worst_status(exit_status, new_exit_status)
 
                 #
@@ -496,11 +495,10 @@ def main(default_values):
                 (user_readable_message_for_nagios) | (label)=(value)(metric);
                 (warn level);(crit level);(min level);(max level)
                 """
-
-                output_value = "%.2f" % units
+                output_value = "%.2fc" % value
                 warn_level = str(int(args.warning) * (args.bandwidth / 100))
                 crit_level = str(int(args.critical) * (args.bandwidth / 100))
-                min_level = str(0.0)
+                min_level = '0'
                 max_level = str(args.bandwidth)
 
                 perfdata.append(format_perfdata(counter['prefix'] + if_name,

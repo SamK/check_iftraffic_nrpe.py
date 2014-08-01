@@ -3,6 +3,7 @@ check_iftraffic_nrpe.py
 
 This is a Nagios plugin to check network traffic with NRPE on Linux.
 This script has been created because I like writing Python scripts.
+It returns perfdata values in B/s (bytes per seconds).
 
 Installation
 --------
