@@ -222,8 +222,8 @@ def calc_diff(value1, uptime1, value2, uptime2):
 
 def get_perfdata(label, value, warn_level, crit_level, min_level, max_level):
     """Return the perfdata string of an item"""
-    return ("%(label)s=%(value).2f;" % {'label': label, 'value': value} + \
-            '%(warn_level)d;%(crit_level)d;%(min_level)d;%(max_level)d' % \
+    return ("%(label)s=%(value).2f;" % {'label': label, 'value': value} +
+            '%(warn_level)d;%(crit_level)d;%(min_level)d;%(max_level)d' %
             {'warn_level': warn_level, 'crit_level': crit_level,
              'min_level': min_level, 'max_level': max_level})
 
@@ -286,17 +286,15 @@ def parse_arguments(default_values):
     global __version__
 
     version_string = "%(prog)s-%(version)s by %(author)s" % \
-                     {"prog": "%(prog)s", "version": __version__, \
-                     "author": __author__}
+        {"prog": "%(prog)s", "version": __version__, "author": __author__}
 
     p = argparse.ArgumentParser(
         description="NRPE plugin to monitor Linux network traffic")
 
-    g_nag = p.add_argument_group("nagios options", "")
-    g_if  = p.add_argument_group("interface options", "")
-    g_filter   = p.add_argument_group("filtering options",
-                                      'The options "-i", \
-                                      "-x" and "-X" are mutually exclusive')
+    g_nag    = p.add_argument_group("nagios options", "")
+    g_if     = p.add_argument_group("interface options", "")
+    g_filter = p.add_argument_group("filtering options", 'The options "-i", \
+                                    "-x" and "-X" are mutually exclusive')
     g_filter_x = g_filter.add_mutually_exclusive_group()
 
     p.add_argument('-V', '--version', action='version',
@@ -351,7 +349,7 @@ def main(default_values):
     _status_codes = {'OK': 0, 'WARNING': 1, 'CRITICAL': 2, 'UNKNOWN': 3}
     # counters needed for calculations
     # see get_data() to see how it is used
-    counter_names = [d['name'] for d in  default_values['counters']]
+    counter_names = [d['name'] for d in default_values['counters']]
     if_data0 = None
     # The default exit status
     exit_status = 'OK'
@@ -461,7 +459,7 @@ def main(default_values):
             #
             # Traffic calculation
             #
-            for counter in  default_values['counters']:
+            for counter in default_values['counters']:
 
                 # calculate the bytes
                 units = calc_diff(if_data0[if_name][counter['name']], uptime0,
@@ -478,7 +476,7 @@ def main(default_values):
                                                       args.critical,
                                                       args.warning)
                 if new_exit_status != 'OK':
-                    problems.append("%s: %s/%s" % \
+                    problems.append("%s: %s/%s" %
                                     (if_name, units, args.bandwidth))
                 exit_status = worst_status(exit_status, new_exit_status)
 
