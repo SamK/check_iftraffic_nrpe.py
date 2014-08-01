@@ -59,7 +59,7 @@ Development
 
 Print library documentation:
 
-    LIB="check_iftraffic_nrpe" ;  python -c "import sys; sys.path.insert(0,'.'); import $LIB; import pydoc; pydoc.doc($LIB)"
+    pydoc ./check_iftraffic_nrpe.py
 
 Testing the code:
 
