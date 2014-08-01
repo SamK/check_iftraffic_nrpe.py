@@ -220,7 +220,7 @@ def calc_diff(value1, uptime1, value2, uptime2):
 #
 
 
-def get_perfdata(label, value, warn_level, crit_level, min_level, max_level):
+def format_perfdata(label, value, warn_level, crit_level, min_level, max_level):
     """Return the perfdata string of an item"""
     return '%(label)s=%(value).2f;' \
            '%(warn_level)d;' \
@@ -502,7 +502,7 @@ def main(default_values):
                 min_level = 0.0
                 max_level = args.bandwidth
 
-                perfdata.append(get_perfdata(counter['prefix'] + if_name,
+                perfdata.append(format_perfdata(counter['prefix'] + if_name,
                                 units, warn_level, crit_level, min_level,
                                 max_level))
 
