@@ -300,6 +300,10 @@ def parse_arguments(default_values):
 
     p.add_argument('-V', '--version', action='version',
                    help="shows program version", version=version_string)
+    p.add_argument('-f', '--data-file',
+                   default=default_values['data_file'],
+                   help='specify an alternate data file \
+                        (default: %(default)s)')
 
     g_nag    = p.add_argument_group("nagios options", "")
     g_nag.add_argument('-c', '--critical', default=default_values['critical'],
@@ -326,10 +330,6 @@ def parse_arguments(default_values):
                           help='Only consider interfaces with given linktype. \
                                Possible values are "ethernet", "loopback", \
                                "ppp", "sit"')
-    p.add_argument('-f', '--data-file',
-                   default=default_values['data_file'],
-                   help='specify an alternate data file \
-                        (default: %(default)s)')
 
     g_filter_x = g_filter.add_mutually_exclusive_group()
     g_filter_x.add_argument('-i', '--interfaces', nargs='*',
