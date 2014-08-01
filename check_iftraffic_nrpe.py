@@ -230,9 +230,9 @@ def get_perfdata(label, value, warn_level, crit_level, min_level, max_level):
 
 def nagios_value_status(value, max_value, percent_crit, percent_warn):
     """Returns the string defining the Nagios status of the value"""
-    if value > percent_crit * (max_value / 100):
+    if value >= percent_crit * (max_value / 100):
         return 'CRITICAL'
-    if value > percent_warn * (max_value / 100):
+    if value >= percent_warn * (max_value / 100):
         return 'WARNING'
     return 'OK'
 
