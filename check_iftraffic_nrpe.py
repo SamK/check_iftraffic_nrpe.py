@@ -205,7 +205,7 @@ def calc_diff(value1, uptime1, value2, uptime2):
         return value2
     if value1 > value2:
         # the counter did a reset. I hope that max_counter() is doint right
-        return max_counter() - value1 + value2
+        return max_counter() - value1 + value2 + 1
     else:
         # normal behaviour
         return value2 - value1
