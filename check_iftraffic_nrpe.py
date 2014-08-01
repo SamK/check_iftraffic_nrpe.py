@@ -222,10 +222,17 @@ def calc_diff(value1, uptime1, value2, uptime2):
 
 def get_perfdata(label, value, warn_level, crit_level, min_level, max_level):
     """Return the perfdata string of an item"""
-    return ("%(label)s=%(value).2f;" % {'label': label, 'value': value} +
-            '%(warn_level)d;%(crit_level)d;%(min_level)d;%(max_level)d' %
-            {'warn_level': warn_level, 'crit_level': crit_level,
-             'min_level': min_level, 'max_level': max_level})
+    return '%(label)s=%(value).2f;' \
+           '%(warn_level)d;' \
+           '%(crit_level)d;' \
+           '%(min_level)d;' \
+           '%(max_level)d' % \
+           {'label': label,
+            'value': value,
+            'warn_level': warn_level,
+            'crit_level': crit_level,
+            'min_level': min_level,
+            'max_level': max_level}
 
 
 def nagios_value_status(value, max_value, percent_crit, percent_warn):
