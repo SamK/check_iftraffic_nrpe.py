@@ -8,7 +8,7 @@ Installation
 --------
 
 * The latest stable release can be found here: https://github.com/samyboy/check_iftraffic_nrpe.py/releases
-* Copy the file `check_iftraffic_nrpe.py` into the appropriate Nagios folder (example: `/usr/lib/nagios/plugins/`)
+* Copy the file `check_iftraffic_nrpe.py` into your favorite folder (examples: `/usr/lib/nagios/plugins/, /usr/local/bin)
 
 Prerequisites
 -------------
@@ -21,7 +21,6 @@ Compatibility
 
 * This script has been tested under Python 2.7 only.
 * It is not compatible with Python 2.4
-
 * It has been tested under Nagios 3.x only.
 
 Usage examples
@@ -62,13 +61,14 @@ Print library documentation:
 
     LIB="check_iftraffic_nrpe" ;  python -c "import sys; sys.path.insert(0,'.'); import $LIB; import pydoc; pydoc.doc($LIB)"
 
-Check Python syntax:
+Testing the code:
 
-    pylint -E file.py
-
-Follow PEP8 style guide:
-
+    # Check Python syntax
+    pylint -E check_iftraffic_nrpe.py
+    # Follow PEP8 style guide:
     pep8 --ignore=E111,E221,E701 --show-source --show-pep8 check_iftraffic_nrpe.py
+    # Execute unit tests
+    ./unittests/unittests.py
 
 Author
 ------
