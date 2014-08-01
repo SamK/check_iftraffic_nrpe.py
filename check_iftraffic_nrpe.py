@@ -222,11 +222,11 @@ def calc_diff(value1, uptime1, value2, uptime2):
 
 def format_perfdata(label, value, warn_level, crit_level, min_level, max_level):
     """Return the perfdata string of an item"""
-    return '%(label)s=%(value).2f;' \
-           '%(warn_level)d;' \
-           '%(crit_level)d;' \
-           '%(min_level)d;' \
-           '%(max_level)d' % \
+    return '%(label)s=%(value)s;' \
+           '%(warn_level)s;' \
+           '%(crit_level)s;' \
+           '%(min_level)s;' \
+           '%(max_level)s' % \
            {'label': label,
             'value': value,
             'warn_level': warn_level,
@@ -497,13 +497,14 @@ def main(default_values):
                 (warn level);(crit level);(min level);(max level)
                 """
 
-                warn_level = int(args.warning) * (args.bandwidth / 100)
-                crit_level = int(args.critical) * (args.bandwidth / 100)
-                min_level = 0.0
-                max_level = args.bandwidth
+                output_value = "%.2f" % units
+                warn_level = str(int(args.warning) * (args.bandwidth / 100))
+                crit_level = str(int(args.critical) * (args.bandwidth / 100))
+                min_level = str(0.0)
+                max_level = str(args.bandwidth)
 
                 perfdata.append(format_perfdata(counter['prefix'] + if_name,
-                                units, warn_level, crit_level, min_level,
+                                output_value, warn_level, crit_level, min_level,
                                 max_level))
 
     #
