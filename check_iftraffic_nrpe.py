@@ -466,7 +466,7 @@ def main(default_values):
         try:
             specify_device(args.interfaces, traffic1)
         except DeviceError as e:
-            traffic = dict()
+            traffic1 = dict()
             message = str(e).replace("'", "")
             problems.append(message)
             exit_status = 'CRITICAL'
