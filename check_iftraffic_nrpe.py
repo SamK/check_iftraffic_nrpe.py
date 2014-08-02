@@ -339,8 +339,8 @@ def parse_arguments(default_values):
     parser.add_argument('-u', '--unit', default=default_values['unit'],
                         choices=unit_choices,
                         help='Specifies the unit to to display per seconds.\
-                              (default: %(default)s). Note that the multiplier \
-                              is 1000.')
+                              (default: %(default)s). Note that the \
+                              multiplier is 1000.')
 
     g_nag = parser.add_argument_group("nagios options", "")
     g_nag.add_argument('-c', '--critical', default=default_values['critical'],
