@@ -99,14 +99,6 @@ class Nagios_Value_Status(unittest.TestCase):
         self.exec_test(90, 'CRITICAL')
         self.exec_test(91, 'CRITICAL')
 
-class Bits2Bytes(unittest.TestCase):
-    def test(self):
-        self.assertEqual(myscript.bits2bytes(0), 0)
-        self.assertEqual(myscript.bits2bytes(7), 0)
-        self.assertEqual(myscript.bits2bytes(8), 1)
-        self.assertEqual(myscript.bits2bytes(17), 2)
-        self.assertEqual(myscript.bits2bytes(-1), -1)
-
 class Specify_Devices(unittest.TestCase):
     def setUp(self):
         self.devices = myscript.ProcNetDev().parse(myscript.ProcNetDev().read())
