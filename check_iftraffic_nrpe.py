@@ -331,7 +331,7 @@ def parse_arguments(default_values):
                         (default: %(default)s)')
     p.add_argument('-u', '--unit', default=default_values['unit'], choices=unit_choices,
                     help='Specifies the unit to to display per seconds.\
-                          (default: %(default)s)')
+                          (default: %(default)s). Note that the multiplier is 1000.')
 
     g_nag    = p.add_argument_group("nagios options", "")
     g_nag.add_argument('-c', '--critical', default=default_values['critical'],
@@ -345,12 +345,8 @@ def parse_arguments(default_values):
     g_if     = p.add_argument_group("interface options", "")
     g_if.add_argument('-b', '--bandwidth', default=default_values['bandwidth'],
                       type=int,
-                      help="Define the maximum bandwidth in bytes/s \
-                           (default %(default)s). \
-                           Example: \
-                           100Mb/s:  100 * 1024 * 1024 / 8 = 13107200. \
-                           1000Mb/s: 1000 * 1024 * 1024 / 8 = 131072000. \
-                           Yes, you must calculate.")
+                      help="Define the maximum bandwidth (default %(default)s bytes). \
+                            BANDWIDTH is in the same unit of UNITS provided by --units.")
 
     g_filter = p.add_argument_group("filtering options", 'The options "-i", \
                                     "-x" and "-X" are mutually exclusive')
