@@ -179,7 +179,8 @@ class ProcNetDev(object):
 
     def read(self, filename=None):
         """Returns the content of the /proc/net/dev file as is."""
-        if filename is None: filename = self.filename
+        if filename is None:
+            filename = self.filename
         self.content = open(filename, "r").read()
         return self.content
 
@@ -488,8 +489,8 @@ def main(default_values):
     perfdata = []
 
     if not if_data0:
-        """The script did not gather the previous data.
-        This might be the first run."""
+        # The script did not gather the previous data.
+        # This might be the first run.
         if not problems:
             problems.append("First run.")
     else:
