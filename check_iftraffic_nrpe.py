@@ -332,7 +332,7 @@ def parse_arguments(default_values):
                          (default: %(default)s). Note that the multiplier \
                          is 1000.')
 
-    g_nag    = p.add_argument_group("nagios options", "")
+    g_nag = p.add_argument_group("nagios options", "")
     g_nag.add_argument('-c', '--critical', default=default_values['critical'],
                        type=int,
                        help='Percentage for value CRITICAL \
@@ -341,7 +341,7 @@ def parse_arguments(default_values):
                        help='Percentage for value WARNING \
                             (default:  %(default)s).')
 
-    g_if     = p.add_argument_group("interface options", "")
+    g_if = p.add_argument_group("interface options", "")
     g_if.add_argument('-b', '--bandwidth', default=default_values['bandwidth'],
                       type=int,
                       help="Define the maximum bandwidth (default %(default)s \
