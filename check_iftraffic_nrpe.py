@@ -44,11 +44,13 @@ __author__ = 'Samuel Krieg'
 
 
 class DeviceError(Exception):
-    def __init__(self, value):
-        self.value = value
+    """Raised when something related to a device went wrong."""
+    def __init__(self, message):
+        super(DeviceError, self).__init__(message)
+        self.value = message
 
     def __str__(self):
-        return repr(self.value)
+        return repr(self.message)
 
 #
 # Classes
