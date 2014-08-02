@@ -403,7 +403,6 @@ def main(default_values):
     procnetdev1 = ProcNetDev().read()
     uptime1 = uptime()
     traffic1 = ProcNetDev().parse(procnetdev1)
-    if_data1 = traffic1  # FIXME: remove
 
     #
     # Read previous data
