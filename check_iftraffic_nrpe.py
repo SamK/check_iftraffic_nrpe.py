@@ -345,9 +345,9 @@ def parse_arguments(default_values):
     g_if     = p.add_argument_group("interface options", "")
     g_if.add_argument('-b', '--bandwidth', default=default_values['bandwidth'],
                       type=int,
-                      help="Define the maximum bandwidth (default %(default)s bytes which is %(descr)s). \
-                            BANDWIDTH is in the same unit of UNITS provided by --units." % \
-                            {'descr': default_values['bandwidth_descr'], 'default': '%(default)s'})
+                      help="Define the maximum bandwidth (default %(default)s %(default_unit)s which is something around %(descr)s). \
+                            If --units is specified, the value of BANDWIDTH must in the same unit." % \
+                            {'descr': default_values['bandwidth_descr'], 'default_unit': default_values['unit'], 'default': '%(default)s'})
 
     g_filter = p.add_argument_group("filtering options", 'The options "-i", \
                                     "-x" and "-X" are mutually exclusive')
