@@ -24,7 +24,7 @@ This script is based on check_iftraffic_nrpe.pl by Van Dyck Sven.
 
 Website: https://github.com/samyboy/check_iftraffic_nrpe.py
 """
- g
+
 import array
 import fcntl
 import os
