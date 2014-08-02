@@ -292,6 +292,9 @@ def parse_arguments(default_values):
     global __author__
     global __version__
 
+    unit_choices = ['B', 'kB', 'MB', 'GB', 'TB',
+                    'b', 'kB', 'Mb', 'Gb', 'Tb']
+
     version_string = "%(prog)s-%(version)s by %(author)s" % \
         {"prog": "%(prog)s", "version": __version__, "author": __author__}
 
@@ -304,6 +307,9 @@ def parse_arguments(default_values):
                    default=default_values['data_file'],
                    help='specify an alternate data file \
                         (default: %(default)s)')
+    p.add_argument('-u', '--unit', default=default_values['unit'], choices=unit_choices,
+                    help='Specifies the unit to to display per seconds.\
+                          (default: %(default)s)')
 
     g_nag    = p.add_argument_group("nagios options", "")
     g_nag.add_argument('-c', '--critical', default=default_values['critical'],
@@ -340,8 +346,6 @@ def parse_arguments(default_values):
     g_filter_x.add_argument('-X', '--excludere', nargs='*',
                             help='exclude interface specified by regexp')
 
-    #p.add_argument('-u', '--units', type=str, choices=['G', 'M', 'k'],
-    #               help='units')
     #p.add_argument('-B', '--total', action=store_true,
     #               help='calculate total of interfaces')
 
@@ -524,6 +528,7 @@ if __name__ == '__main__':
     default_values["critical"] = 98
     default_values["data_file"] = '/var/tmp/traffic_stats.dat'
     default_values["bandwidth"] = 13107200
+    default_values['unit'] = 'B'
 
     default_values["counters"] = [
         {"name": "rx_bytes", "prefix": "in-", "column": 0},
