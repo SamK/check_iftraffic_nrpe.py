@@ -287,6 +287,28 @@ def specify_device(devices, data):
             del data[i]
 
 
+def convert_bytes(value, unit):
+    # default is byte:
+
+    if unit == 'B':
+        return value
+
+    if unit == 'b':
+        return value * 8
+
+    multiple = unit[0]
+    data_unit = unit[1]
+
+    if data_unit == 'b':
+        value *= 8
+
+    for m in [ 'k', 'M', 'G', 'T']:
+        value = value / 1000
+        if m == multiple:
+            return value
+    return Exception ("wtf?")
+
+
 def parse_arguments(default_values):
     """Try to parse the command line arguments given by the user"""
     global __author__
