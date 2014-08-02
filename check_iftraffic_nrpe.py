@@ -135,6 +135,10 @@ class ProcNetDev():
         self.content = None
 
     def parse(self, data=None):
+        """Returns a python dictionnary including the values of the
+           `/proc/net/dev` file. *data* can be a string containing
+           the content of `/proc/net/dev`.
+        """
         if data is None:
             data = self.read()
 
@@ -165,6 +169,7 @@ class ProcNetDev():
         return self.interfaces
 
     def read(self, filename=None):
+        """Returns the content of the /proc/net/dev file as is."""
         if filename is None: filename = self.filename
         self.content = open(filename, "r").read()
         return self.content
@@ -259,14 +264,14 @@ def worst_status(status1, status2):
 
 
 def exclude_device(exclude, data):
-    """Remove the interfaces excluded by the user"""
+    """Remove the *exclude* device from *data*"""
     for device in exclude:
         if device in data:
             del data[device]
 
 
 def excludere_device(exclude, data):
-    """Remove the interfaces excluded by the user"""
+    """Remove the *exclude* device from *data* using regexp"""
     for devicere in exclude:
         devicere = re.compile(devicere)
         for device in list(data):
@@ -275,7 +280,7 @@ def excludere_device(exclude, data):
 
 
 def specify_device(devices, data):
-    """Only includes interfaces specified by the user"""
+    """Only includes the *devices* in *data*"""
 
     # be sure that the interfaces exist
     for device in devices:
