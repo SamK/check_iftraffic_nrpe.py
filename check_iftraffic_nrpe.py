@@ -345,8 +345,9 @@ def parse_arguments(default_values):
     g_if     = p.add_argument_group("interface options", "")
     g_if.add_argument('-b', '--bandwidth', default=default_values['bandwidth'],
                       type=int,
-                      help="Define the maximum bandwidth (default %(default)s bytes). \
-                            BANDWIDTH is in the same unit of UNITS provided by --units.")
+                      help="Define the maximum bandwidth (default %(default)s bytes which is %(descr)s). \
+                            BANDWIDTH is in the same unit of UNITS provided by --units." % \
+                            {'descr': default_values['bandwidth_descr'], 'default': '%(default)s'})
 
     g_filter = p.add_argument_group("filtering options", 'The options "-i", \
                                     "-x" and "-X" are mutually exclusive')
@@ -527,13 +528,14 @@ def main(default_values):
                 max_level = int(args.bandwidth)
 
                 if args.unit != default_values['_linux_unit']:
+                    """ convert to desired unit if asked"""
                     traffic_value = convert_bytes(traffic_value, args.unit)
                     warn_level = convert_bytes(warn_level, args.unit)
                     crit_level = convert_bytes(crit_level, args.unit)
                     min_level = convert_bytes(min_level, args.unit)
                     max_level = convert_bytes(max_level, args.unit)
 
-                # to str
+                # convert everything to string
                 traffic_value = "%.2fc" % traffic_value
                 warn_level = str(warn_level)
                 crit_level = str(crit_level)
@@ -559,7 +561,8 @@ if __name__ == '__main__':
     default_values["warning"] = 85
     default_values["critical"] = 98
     default_values["data_file"] = '/var/tmp/traffic_stats.dat'
-    default_values["bandwidth"] = 13107200
+    default_values["bandwidth"] = 1000*1000*100/8
+    default_values["bandwidth_descr"] = "100 Mb"
     default_values['_linux_unit'] = 'B'
     default_values['unit'] = default_values['_linux_unit']
 
