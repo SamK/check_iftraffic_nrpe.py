@@ -198,7 +198,7 @@ def max_counter():
 def calc_diff(value1, uptime1, value2, uptime2):
     """Calculate the difference between two values.
     The function takes care of the maximum allowed value by the system"""
-    # throw error if not numeric type
+    # raise error if not numeric type
     for val in [value1, uptime1, value2, uptime2]:
         if not (isinstance(val, int) or
                 isinstance(val, float) or
@@ -220,7 +220,8 @@ def calc_diff(value1, uptime1, value2, uptime2):
 #
 
 
-def format_perfdata(label, value, warn_level, crit_level, min_level, max_level):
+def format_perfdata(label, value, warn_level, crit_level, min_level,
+                    max_level):
     """Return the perfdata string of an item"""
     return '%(label)s=%(value)s;' \
            '%(warn_level)s;' \
@@ -302,11 +303,11 @@ def convert_bytes(value, unit):
     if data_unit == 'b':
         value *= 8
 
-    for m in [ 'k', 'M', 'G', 'T']:
+    for m in ['k', 'M', 'G', 'T']:
         value = value / 1000
         if m == multiple:
             return value
-    return Exception ("wtf?")
+    raise Exception("Cannot parse %s" % unit)
 
 
 def parse_arguments(default_values):
@@ -329,9 +330,11 @@ def parse_arguments(default_values):
                    default=default_values['data_file'],
                    help='specify an alternate data file \
                         (default: %(default)s)')
-    p.add_argument('-u', '--unit', default=default_values['unit'], choices=unit_choices,
-                    help='Specifies the unit to to display per seconds.\
-                          (default: %(default)s). Note that the multiplier is 1000.')
+    p.add_argument('-u', '--unit', default=default_values['unit'],
+                   choices=unit_choices,
+                   help='Specifies the unit to to display per seconds.\
+                         (default: %(default)s). Note that the multiplier \
+                         is 1000.')
 
     g_nag    = p.add_argument_group("nagios options", "")
     g_nag.add_argument('-c', '--critical', default=default_values['critical'],
@@ -345,9 +348,13 @@ def parse_arguments(default_values):
     g_if     = p.add_argument_group("interface options", "")
     g_if.add_argument('-b', '--bandwidth', default=default_values['bandwidth'],
                       type=int,
-                      help="Define the maximum bandwidth (default %(default)s %(default_unit)s which is something around %(descr)s). \
-                            If --units is specified, the value of BANDWIDTH must in the same unit." % \
-                            {'descr': default_values['bandwidth_descr'], 'default_unit': default_values['unit'], 'default': '%(default)s'})
+                      help="Define the maximum bandwidth (default %(default)s \
+                            %(default_unit)s which is something around \
+                            %(descr)s). If --units is specified, the value of \
+                            BANDWIDTH must in the same unit." %
+                            {'descr': default_values['bandwidth_descr'],
+                             'default_unit': default_values['unit'],
+                             'default': '%(default)s'})
 
     g_filter = p.add_argument_group("filtering options", 'The options "-i", \
                                     "-x" and "-X" are mutually exclusive')
@@ -369,6 +376,7 @@ def parse_arguments(default_values):
     #               help='calculate total of interfaces')
 
     return p.parse_args()
+
 
 def main(default_values):
     """This main function is wayyyy too long"""
@@ -494,8 +502,10 @@ def main(default_values):
             for counter in default_values['counters']:
 
                 # calculate the bytes
-                traffic_value = calc_diff(if_data0[if_name][counter['name']], uptime0,
-                                  if_data1[counter['name']], uptime1)
+                traffic_value = calc_diff(if_data0[if_name][counter['name']],
+                                          uptime0,
+                                          if_data1[counter['name']],
+                                          uptime1)
 
                 # calculate the bytes per second
                 traffic_value /= elapsed_time
@@ -504,7 +514,8 @@ def main(default_values):
                 # Decide a Nagios status
                 #
 
-                new_exit_status = nagios_value_status(traffic_value, args.bandwidth,
+                new_exit_status = nagios_value_status(traffic_value,
+                                                      args.bandwidth,
                                                       args.critical,
                                                       args.warning)
                 if new_exit_status != 'OK':
@@ -543,8 +554,8 @@ def main(default_values):
                 max_level = str(min_level)
 
                 perfdata.append(format_perfdata(counter['prefix'] + if_name,
-                                traffic_value, warn_level, crit_level, min_level,
-                                max_level))
+                                traffic_value, warn_level, crit_level,
+                                min_level, max_level))
 
     #
     # Program output
@@ -561,7 +572,7 @@ if __name__ == '__main__':
     default_values["warning"] = 85
     default_values["critical"] = 98
     default_values["data_file"] = '/var/tmp/traffic_stats.dat'
-    default_values["bandwidth"] = 1000*1000*100/8
+    default_values["bandwidth"] = 1000 * 1000 * 100 / 8
     default_values["bandwidth_descr"] = "100 Mb"
     default_values['_linux_unit'] = 'B'
     default_values['unit'] = default_values['_linux_unit']
