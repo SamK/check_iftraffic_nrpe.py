@@ -128,34 +128,43 @@ class Specify_Devices(unittest.TestCase):
         for device in self.devices:
             self.assertIn(device, devices)
 
-class Unit_Conversion(unittest.TestCase):
+class Convert_Bytes(unittest.TestCase):
     def setUp(self):
-       self.value = 10
        self.multiple = 1000
+       self.sample_values = [ 0, 1, 10, 100, 1000, 3214]
 
-    def test_units(self):
+    def test_convert_bytes(self):
         # Test Bytes
-        result = self.value
-        self.assertEqual(myscript.convert(self.value, 'B'))
-        result = self.value / self.multiple
-        self.assertEqual(myscript.convert(self.value, 'kB'))
-        result = self.value / ( self.multiple * 2 )
-        self.assertEqual(myscript.convert(self.value, 'MB'))
-        result = self.value / ( self.multiple * 3 )
-        self.assertEqual(myscript.convert(self.value, 'GB'))
-        result = self.value / ( self.multiple * 4 )
-        self.assertEqual(myscript.convert(self.value, 'TB'))
-        # Test bits
-        result = self.value * 8
-        self.assertEqual(myscript.convert(self.value, 'b'))
-        result = self.value / self.multiple
-        self.assertEqual(myscript.convert(self.value, 'kb'))
-        result = self.value / ( self.multiple * 2 )
-        self.assertEqual(myscript.convert(self.value, 'Mb'))
-        result = self.value / ( self.multiple * 3 )
-        self.assertEqual(myscript.convert(self.value, 'Gb'))
-        result = self.value / ( self.multiple * 4 )
-        self.assertEqual(myscript.convert(self.value, 'Tb'))
+        for value in self.sample_values:
+            result = value
+            self.assertEqual(myscript.convert_bytes(value, 'B'), result)
+            result = value / self.multiple
+            self.assertEqual(myscript.convert_bytes(value, 'kB'), result)
+            result = value / ( pow(self.multiple, 2) )
+            self.assertEqual(myscript.convert_bytes(value, 'MB'), result)
+            result = value / ( pow(self.multiple, 3) )
+            self.assertEqual(myscript.convert_bytes(value, 'GB'), result)
+            result = value / ( pow(self.multiple, 4) )
+            self.assertEqual(myscript.convert_bytes(value, 'TB'), result)
+            # Test bits
+    def test_convert_bytes_to_bits(self):
+        # Test Bytes
+        for value in self.sample_values:
+            self.assertEqual(myscript.convert_bytes(0, 'b'), 0)
+            self.assertEqual(myscript.convert_bytes(0, 'kb'), 0)
+            self.assertEqual(myscript.convert_bytes(0, 'Tb'), 0)
+            self.assertEqual(myscript.convert_bytes(1, 'b'), 8)
+            self.assertEqual(myscript.convert_bytes(1000, 'kb'), 8)
+            result = 8 * value
+            self.assertEqual(myscript.convert_bytes(value, 'b'), result)
+            result = 8 * value / self.multiple
+            self.assertEqual(myscript.convert_bytes(value, 'kb'), result)
+            result = 8 * value / ( pow(self.multiple, 2) )
+            self.assertEqual(myscript.convert_bytes(value, 'Mb'), result)
+            result = 8 * value / ( pow(self.multiple, 3) )
+            self.assertEqual(myscript.convert_bytes(value, 'Gb'), result)
+            result = 8 * value / ( pow(self.multiple, 4) )
+            self.assertEqual(myscript.convert_bytes(value, 'Tb'), result)
 
 if __name__ == "__main__":
     unittest.main()
