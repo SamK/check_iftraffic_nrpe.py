@@ -497,22 +497,22 @@ def main(default_values):
             for counter in default_values['counters']:
 
                 # calculate the bytes
-                value = calc_diff(if_data0[if_name][counter['name']], uptime0,
+                traffic_value = calc_diff(if_data0[if_name][counter['name']], uptime0,
                                   if_data1[counter['name']], uptime1)
 
                 # calculate the bytes per second
-                value /= elapsed_time
+                traffic_value /= elapsed_time
 
                 #
                 # Decide a Nagios status
                 #
 
-                new_exit_status = nagios_value_status(value, args.bandwidth,
+                new_exit_status = nagios_value_status(traffic_value, args.bandwidth,
                                                       args.critical,
                                                       args.warning)
                 if new_exit_status != 'OK':
                     problems.append("%s: %s/%s" %
-                                    (if_name, value, args.bandwidth))
+                                    (if_name, traffic_value, args.bandwidth))
                 exit_status = worst_status(exit_status, new_exit_status)
 
                 #
@@ -524,14 +524,28 @@ def main(default_values):
                 (user_readable_message_for_nagios) | (label)=(value)(metric);
                 (warn level);(crit level);(min level);(max level)
                 """
-                output_value = "%.2fc" % value
-                warn_level = str(int(args.warning) * (args.bandwidth / 100))
-                crit_level = str(int(args.critical) * (args.bandwidth / 100))
-                min_level = '0'
-                max_level = str(args.bandwidth)
+
+                warn_level = int(args.warning) * (args.bandwidth / 100)
+                crit_level = int(args.critical) * (args.bandwidth / 100)
+                min_level = 0
+                max_level = int(args.bandwidth)
+
+                if args.unit != default_values['_linux_unit']:
+                    traffic_value = convert_bytes(traffic_value, args.unit)
+                    warn_level = convert_bytes(warn_level, args.unit)
+                    crit_level = convert_bytes(crit_level, args.unit)
+                    min_level = convert_bytes(min_level, args.unit)
+                    max_level = convert_bytes(max_level, args.unit)
+
+                # to str
+                traffic_value = "%.2fc" % traffic_value
+                warn_level = str(warn_level)
+                crit_level = str(crit_level)
+                min_level = str(min_level)
+                max_level = str(min_level)
 
                 perfdata.append(format_perfdata(counter['prefix'] + if_name,
-                                output_value, warn_level, crit_level, min_level,
+                                traffic_value, warn_level, crit_level, min_level,
                                 max_level))
 
     #
@@ -550,7 +564,8 @@ if __name__ == '__main__':
     default_values["critical"] = 98
     default_values["data_file"] = '/var/tmp/traffic_stats.dat'
     default_values["bandwidth"] = 13107200
-    default_values['unit'] = 'B'
+    default_values['_linux_unit'] = 'B'
+    default_values['unit'] = default_values['_linux_unit']
 
     default_values["counters"] = [
         {"name": "rx_bytes", "prefix": "in-", "column": 0},
