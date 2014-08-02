@@ -128,8 +128,34 @@ class Specify_Devices(unittest.TestCase):
         for device in self.devices:
             self.assertIn(device, devices)
 
+class Unit_Conversion(unittest.TestCase):
+    def setUp(self):
+       self.value = 10
+       self.multiple = 1000
 
-
+    def test_units(self):
+        # Test Bytes
+        result = self.value
+        self.assertEqual(myscript.convert(self.value, 'B'))
+        result = self.value / self.multiple
+        self.assertEqual(myscript.convert(self.value, 'kB'))
+        result = self.value / ( self.multiple * 2 )
+        self.assertEqual(myscript.convert(self.value, 'MB'))
+        result = self.value / ( self.multiple * 3 )
+        self.assertEqual(myscript.convert(self.value, 'GB'))
+        result = self.value / ( self.multiple * 4 )
+        self.assertEqual(myscript.convert(self.value, 'TB'))
+        # Test bits
+        result = self.value * 8
+        self.assertEqual(myscript.convert(self.value, 'b'))
+        result = self.value / self.multiple
+        self.assertEqual(myscript.convert(self.value, 'kb'))
+        result = self.value / ( self.multiple * 2 )
+        self.assertEqual(myscript.convert(self.value, 'Mb'))
+        result = self.value / ( self.multiple * 3 )
+        self.assertEqual(myscript.convert(self.value, 'Gb'))
+        result = self.value / ( self.multiple * 4 )
+        self.assertEqual(myscript.convert(self.value, 'Tb'))
 
 if __name__ == "__main__":
     unittest.main()
