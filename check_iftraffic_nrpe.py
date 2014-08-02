@@ -58,6 +58,7 @@ class DeviceError(Exception):
 
 
 class InterfaceDetection(object):
+    """Detects automatically the types of interfaces"""
     SIOCGIFHWADDR = 0x8927
     IF_NAMESIZE = 16
     families = {
@@ -81,6 +82,7 @@ class InterfaceDetection(object):
         self.socket.close()
 
     def query_linktype(self, interface):
+        """Detects automatically the type of the *interface*"""
         buff = struct.pack("%ds1024x" % self.IF_NAMESIZE, interface)
         buff = array.array("b", buff)
         fcntl.ioctl(self.socket.fileno(), self.SIOCGIFHWADDR, buff, True)
@@ -89,12 +91,13 @@ class InterfaceDetection(object):
         return self.families.get(family, "unknown")
 
     def linktype_filter(self, linktypes, data):
+        """Remove from *data* the interfaces that are not *linktypes*"""
         for device in list(data):
             if self.query_linktype(device) not in linktypes:
                 del data[device]
 
 
-class DataFile():
+class DataFile(object):
     """data file format:
         - line 1: uptime
         - rest: data
@@ -106,24 +109,29 @@ class DataFile():
         self.data = None
 
     def mtime(self):
+        """Returns the last modification time of the datafile.
+           See os.path.getmtime() for the format.
+        """
         return os.path.getmtime(self.filename)
 
     def read(self):
+        """Returns the uptime and the data stored in the datafile"""
         content = open(self.filename, "r").readlines()
         self.uptime = float(content[0])
         self.data = "".join(content[1:])
         return self.uptime, self.data
 
     def write(self):
+        """writes the datafile. The data must be stored in DataFile.data"""
         if not self.uptime:
             self.uptime = str(self.uptime())
 
-        fd = open(self.filename, 'w')
-        fd.write("%s\n" % self.uptime)
-        fd.write(self.data)
+        file_obj = open(self.filename, 'w')
+        file_obj.write("%s\n" % self.uptime)
+        file_obj.write(self.data)
 
 
-class ProcNetDev():
+class ProcNetDev(object):
     """http://stackoverflow.com/a/1052628/238913
 
        Transform the /proc/net/dev file into a Python readable format
@@ -181,8 +189,8 @@ class ProcNetDev():
 
 def uptime():
     """Returns the uptime in seconds (float)"""
-    with open('/proc/uptime', 'r') as f:
-        return float(f.readline().split()[0])
+    with open('/proc/uptime', 'r') as file_obj:
+        return float(file_obj.readline().split()[0])
 
 #
 # Calculation functions
@@ -295,15 +303,15 @@ def convert_bytes(value, unit):
     if unit == 'b':
         return value * 8
 
-    multiple = unit[0]
+    multiple_unit = unit[0]
     data_unit = unit[1]
 
     if data_unit == 'b':
         value *= 8
 
-    for m in ['k', 'M', 'G', 'T']:
+    for single_unit in ['k', 'M', 'G', 'T']:
         value = value / 1000
-        if m == multiple:
+        if single_unit == multiple_unit:
             return value
     raise Exception("Cannot parse %s" % unit)
 
@@ -319,22 +327,22 @@ def parse_arguments(default_values):
     version_string = "%(prog)s-%(version)s by %(author)s" % \
         {"prog": "%(prog)s", "version": __version__, "author": __author__}
 
-    p = argparse.ArgumentParser(
+    parser = argparse.ArgumentParser(
         description="NRPE plugin to monitor Linux network traffic")
 
-    p.add_argument('-V', '--version', action='version',
-                   help="shows program version", version=version_string)
-    p.add_argument('-f', '--data-file',
-                   default=default_values['data_file'],
-                   help='specify an alternate data file \
-                        (default: %(default)s)')
-    p.add_argument('-u', '--unit', default=default_values['unit'],
-                   choices=unit_choices,
-                   help='Specifies the unit to to display per seconds.\
-                         (default: %(default)s). Note that the multiplier \
-                         is 1000.')
+    parser.add_argument('-V', '--version', action='version',
+                        help="shows program version", version=version_string)
+    parser.add_argument('-f', '--data-file',
+                        default=default_values['data_file'],
+                        help='specify an alternate data file \
+                             (default: %(default)s)')
+    parser.add_argument('-u', '--unit', default=default_values['unit'],
+                        choices=unit_choices,
+                        help='Specifies the unit to to display per seconds.\
+                              (default: %(default)s). Note that the multiplier \
+                              is 1000.')
 
-    g_nag = p.add_argument_group("nagios options", "")
+    g_nag = parser.add_argument_group("nagios options", "")
     g_nag.add_argument('-c', '--critical', default=default_values['critical'],
                        type=int,
                        help='Percentage for value CRITICAL \
@@ -343,7 +351,7 @@ def parse_arguments(default_values):
                        help='Percentage for value WARNING \
                             (default:  %(default)s).')
 
-    g_if = p.add_argument_group("interface options", "")
+    g_if = parser.add_argument_group("interface options", "")
     g_if.add_argument('-b', '--bandwidth', default=default_values['bandwidth'],
                       type=int,
                       help="Define the maximum bandwidth (default %(default)s \
@@ -354,12 +362,13 @@ def parse_arguments(default_values):
                              'default_unit': default_values['unit'],
                              'default': '%(default)s'})
 
-    g_filter = p.add_argument_group("filtering options", 'The options "-i", \
-                                    "-x" and "-X" are mutually exclusive')
+    g_filter = parser.add_argument_group("filtering options",
+                                         'The options "-i", "-x" and "-X" are \
+                                         mutually exclusive')
     g_filter.add_argument('-l', '--linktype', nargs='*',
-                          help='Only consider interfaces with given linktype. \
-                               Possible values are "ethernet", "loopback", \
-                               "ppp", "sit"')
+                          help='Only consider interfaces with given \
+                               linktype. Possible values are "ethernet", \
+                               "loopback", "ppp", "sit"')
 
     g_filter_x = g_filter.add_mutually_exclusive_group()
     g_filter_x.add_argument('-i', '--interfaces', nargs='*',
@@ -373,7 +382,7 @@ def parse_arguments(default_values):
     #p.add_argument('-B', '--total', action=store_true,
     #               help='calculate total of interfaces')
 
-    return p.parse_args()
+    return parser.parse_args()
 
 
 def main(default_values):
@@ -385,9 +394,6 @@ def main(default_values):
 
     # Nagios status codes
     _status_codes = {'OK': 0, 'WARNING': 1, 'CRITICAL': 2, 'UNKNOWN': 3}
-    # counters needed for calculations
-    # see get_data() to see how it is used
-    counter_names = [d['name'] for d in default_values['counters']]
     if_data0 = None
     # The default exit status
     exit_status = 'OK'
