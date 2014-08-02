@@ -24,7 +24,7 @@ This script is based on check_iftraffic_nrpe.pl by Van Dyck Sven.
 
 Website: https://github.com/samyboy/check_iftraffic_nrpe.py
 """
-
+ g
 import array
 import fcntl
 import os
@@ -116,9 +116,9 @@ class DataFile():
         if not self.uptime:
             self.uptime = str(self.uptime())
 
-        f = open(self.filename, 'w')
-        f.write("%s\n" % self.uptime)
-        f.write(self.data)
+        fd = open(self.filename, 'w')
+        fd.write("%s\n" % self.uptime)
+        fd.write(self.data)
 
 
 class ProcNetDev():
@@ -465,9 +465,9 @@ def main(default_values):
     if args.interfaces:
         try:
             specify_device(args.interfaces, traffic1)
-        except DeviceError as e:
+        except DeviceError as err:
             traffic1 = dict()
-            message = str(e).replace("'", "")
+            message = str(err).replace("'", "")
             problems.append(message)
             exit_status = 'CRITICAL'
 
