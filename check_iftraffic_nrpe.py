@@ -261,6 +261,71 @@ def worst_status(status1, status2):
         if status1 == status or status2 == status:
             return status
 
+
+class Nagios_Service(object):
+    def __init__(self):
+        self.label = None
+        self.value = None
+        self.min_level = 0
+        self.max_level = None
+        self.warn_level = None
+        self.crit_level = None
+        self.perdata = ''
+
+    def __str__(self):
+        return format_perfdata(self.label,
+                               self.value,
+                               self.warn_level,
+                               self.crit_level,
+                               self.min_level,
+                               self.max_level)
+
+    def status(self):
+        """ determines the Nagios status of the service.
+        """
+        return nagios_value_status(self.value,
+                                   self.max_value,
+                                   self.percent_crit,
+                                   self.percent_warn)
+
+
+class Nagios_Result(object):
+    def __init__(self):
+        self.status_codes = {'OK': 0, 'WARNING': 1, 'CRITICAL': 2, 'UNKNOWN': 3}
+        self.status_order = ['CRITICAL', 'WARNING', 'UNKNOWN', 'OK']
+
+        #The list of the services appened to this Results instance
+        self._services = []
+
+        #The final perfdata string
+        self.name = 'TRAFFIC'
+        self.status = None
+        self.text = ''
+        self.perfdata = ''
+
+    def worst(self, status1, status2):
+        """Compares two Nagios statuses and returns the worst"""
+        return worst_status(status1, status2)
+
+    def exit(self):
+        """Exit the script with the accurate Nagios status
+        """
+        sys.exit(self.exit_code(self.status))
+
+    def add(self, service):
+        self._services.append(service)
+        self.status = self.worst(service.status, self.status)
+
+    def output(self):
+        """Prints the final result
+        """
+        output = "%s %s" % (self.name, self.status)
+        if self.text:
+            output += + ": " + self.text
+        if self.perfdata:
+            output += ' |' + self.perfdata
+        return output
+
 #
 # User arguments related functions
 #
