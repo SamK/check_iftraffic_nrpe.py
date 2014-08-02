@@ -38,7 +38,6 @@ import argparse
 __version__ = '0.8'
 __author__ = 'Samuel Krieg'
 
-
 #
 # Exceptions
 #
@@ -50,7 +49,6 @@ class DeviceError(Exception):
 
     def __str__(self):
         return repr(self.value)
-
 
 #
 # Classes
@@ -174,25 +172,19 @@ class ProcNetDev():
         self.content = open(filename, "r").read()
         return self.content
 
-
 #
 # system functions
 #
+
 
 def uptime():
     """Returns the uptime in seconds (float)"""
     with open('/proc/uptime', 'r') as f:
         return float(f.readline().split()[0])
 
-
 #
 # Calculation functions
 #
-
-
-def bits2bytes(bits):
-    """Convert bits into bytes"""
-    return bits / 8
 
 
 def max_counter():
@@ -256,7 +248,6 @@ def worst_status(status1, status2):
     for status in status_order:
         if status1 == status or status2 == status:
             return status
-
 
 #
 # User arguments related functions
