@@ -165,7 +165,8 @@ class ProcNetDev(object):
 
         # gather the values
         for line in lines[2:]:
-            if line.find(":") < 0: continue  # impossible?
+            if line.find(":") < 0:
+                continue  # impossible?
             # get the interface name
             if_name, data = line.split(":")
             if_name = if_name.strip()
@@ -295,6 +296,7 @@ def specify_device(devices, data):
 
 
 def convert_bytes(value, unit):
+    """Convert bytes to something else"""
     # default is byte:
 
     if unit == 'B':
@@ -419,8 +421,8 @@ def main(default_values):
     datafile = DataFile(args.data_file)
 
     if not os.path.exists(args.data_file):
-        """The script did not write the previous data.
-        This might be the first run."""
+        # The script did not write the previous data.
+        # This might be the first run.
         if not problems:
             problems.append("First run.")
             exit_status = 'UNKNOWN'
@@ -430,7 +432,7 @@ def main(default_values):
         try:
             if_data0 = ProcNetDev().parse(procnetdev0)
         except ValueError:
-            """This must be a script upgrade"""
+            # This must be a script upgrade
             os.remove(args.data_file)
             if_data0 = None
             time0 = time.time()
@@ -530,11 +532,10 @@ def main(default_values):
                 # Perfdata
                 #
 
-                """ How to get perfdata values:
-                perfdata format (in 1 line):
-                (user_readable_message_for_nagios) | (label)=(value)(metric);
-                (warn level);(crit level);(min level);(max level)
-                """
+                # How to get perfdata values:
+                # perfdata format (in 1 line):
+                # (user_readable_message_for_nagios) | (label)=(value)(metric);
+                # (warn level);(crit level);(min level);(max level)
 
                 warn_level = int(args.warning) * (args.bandwidth / 100)
                 crit_level = int(args.critical) * (args.bandwidth / 100)
@@ -542,7 +543,7 @@ def main(default_values):
                 max_level = int(args.bandwidth)
 
                 if args.unit != default_values['_linux_unit']:
-                    """ convert to desired unit if asked"""
+                    # convert to desired unit if asked
                     traffic_value = convert_bytes(traffic_value, args.unit)
                     warn_level = convert_bytes(warn_level, args.unit)
                     crit_level = convert_bytes(crit_level, args.unit)
