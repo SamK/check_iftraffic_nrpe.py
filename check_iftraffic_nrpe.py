@@ -238,13 +238,6 @@ def nagios_value_status(value, max_value, percent_crit, percent_warn):
     return 'OK'
 
 
-def worst_status(status1, status2):
-    """Compare two Nagios statuses and returns the worst"""
-    status_order = ['CRITICAL', 'WARNING', 'UNKNOWN', 'OK']
-    for status in status_order:
-        if status1 == status or status2 == status:
-            return status
-
 
 class Nagios_Service(object):
     def __init__(self):
@@ -310,12 +303,12 @@ class Nagios_Result(object):
             output += " %s" % service
         return output
 
-
-
-
     def worst(self, status1, status2):
         """Compares two Nagios statuses and returns the worst"""
-        return worst_status(status1, status2)
+        status_order = ['CRITICAL', 'WARNING', 'UNKNOWN', 'OK']
+        for status in status_order:
+            if status1 == status or status2 == status:
+                return status
 
     def exit(self):
         """Exit the script with the accurate Nagios status
