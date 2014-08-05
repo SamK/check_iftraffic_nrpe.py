@@ -229,22 +229,6 @@ def calc_diff(value1, uptime1, value2, uptime2):
 #
 
 
-def format_perfdata(label, value, warn_level, crit_level, min_level,
-                    max_level):
-    """Return the perfdata string of an item"""
-    return '%(label)s=%(value).2fc;' \
-           '%(warn_level)s;' \
-           '%(crit_level)s;' \
-           '%(min_level)s;' \
-           '%(max_level)s' % \
-           {'label': label,
-            'value': value,
-            'warn_level': warn_level,
-            'crit_level': crit_level,
-            'min_level': min_level,
-            'max_level': max_level}
-
-
 def nagios_value_status(value, max_value, percent_crit, percent_warn):
     """Returns the string defining the Nagios status of the value"""
     if value >= percent_crit * (max_value / 100):
@@ -273,12 +257,19 @@ class Nagios_Service(object):
         self.perdata = ''
 
     def __str__(self):
-        return format_perfdata(self.label,
-                               self.value,
-                               self.warn_level,
-                               self.crit_level,
-                               self.min_level,
-                               self.max_level)
+        """Return the perfdata string"""
+        return '%(label)s=%(value).2fc;' \
+               '%(warn_level)s;' \
+               '%(crit_level)s;' \
+               '%(min_level)s;' \
+               '%(max_level)s' % \
+               {'label': self.label,
+                'value': self.value,
+                'warn_level': self.warn_level,
+                'crit_level': self.crit_level,
+                'min_level': self.min_level,
+                'max_level': self.max_level}
+
 
     def status(self):
         """ determines the Nagios status of the service.
