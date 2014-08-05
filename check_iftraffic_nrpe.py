@@ -255,7 +255,7 @@ class Nagios_Service(object):
                 'min_level': self.min_level,
                 'max_level': self.max_level}
 
-    def status(self, value)
+    def status(self, value):
         """Returns the string defining the Nagios status of the value"""
         if self.value >= self.crit_level:
             return 'CRITICAL'
