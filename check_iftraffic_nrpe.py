@@ -283,13 +283,15 @@ class Nagios_Service(object):
     def status(self):
         """ determines the Nagios status of the service.
         """
+
         return nagios_value_status(self.value,
-                                   self.max_value,
-                                   self.percent_crit,
-                                   self.percent_warn)
+                                   self.max_level,
+                                   self.crit_level,
+                                   self.warn_level)
 
 
 class Nagios_Result(object):
+
     def __init__(self):
         self.status_codes = {'OK': 0, 'WARNING': 1, 'CRITICAL': 2, 'UNKNOWN': 3}
         self.status_order = ['CRITICAL', 'WARNING', 'UNKNOWN', 'OK']
@@ -298,10 +300,27 @@ class Nagios_Result(object):
         self._services = []
 
         #The final perfdata string
-        self.name = 'TRAFFIC'
-        self.status = None
-        self.text = ''
+        self.name = 'Traffic'
+        self.status = 'UNKNOWN'
+        self.messages = []
         self.perfdata = ''
+
+    def __str__(self):
+        # define the result status
+        for service in self._services:
+            self.status = self.worst(service.status(), self.status)
+
+        # Prints the final result
+        output = "%s %s" % (self.name, self.status)
+        if self.messages:
+            output += ": " + ' '.join(self.messages)
+        output += ' |'
+        for service in self._services:
+            output += " %s" % service
+        return output
+
+
+
 
     def worst(self, status1, status2):
         """Compares two Nagios statuses and returns the worst"""
@@ -310,21 +329,11 @@ class Nagios_Result(object):
     def exit(self):
         """Exit the script with the accurate Nagios status
         """
-        sys.exit(self.exit_code(self.status))
+        sys.exit(self.status_codes[self.status])
 
     def add(self, service):
         self._services.append(service)
         self.status = self.worst(service.status, self.status)
-
-    def output(self):
-        """Prints the final result
-        """
-        output = "%s %s" % (self.name, self.status)
-        if self.text:
-            output += + ": " + self.text
-        if self.perfdata:
-            output += ' |' + self.perfdata
-        return output
 
 #
 # User arguments related functions
@@ -460,11 +469,8 @@ def main(default_values):
     # Default values
     #
 
-    # Nagios status codes
-    _status_codes = {'OK': 0, 'WARNING': 1, 'CRITICAL': 2, 'UNKNOWN': 3}
+    # previous data
     if_data0 = None
-    # The default exit status
-    exit_status = 'OK'
     # The temporary file where data will be stored between to metrics
     args = parse_arguments(default_values)
 
@@ -472,6 +478,7 @@ def main(default_values):
     problems = []
     ifdetect = InterfaceDetection()
 
+    nagios_result = Nagios_Result()
     #
     # Read current data
     #
@@ -490,8 +497,7 @@ def main(default_values):
         # The script did not write the previous data.
         # This might be the first run.
         if not problems:
-            problems.append("First run.")
-            exit_status = 'UNKNOWN'
+            nagios_result.messages.append("First run.")
     else:
         uptime0, procnetdev0 = datafile.read()
         time0 = datafile.mtime()
@@ -502,8 +508,7 @@ def main(default_values):
             os.remove(args.data_file)
             if_data0 = None
             time0 = time.time()
-            problems.append("Data file upgrade, skipping this run.")
-            exit_status = 'UNKNOWN'
+            nagios_result.messages.append("Data file upgrade, skipping this run.")
 
     #
     # Save current data
@@ -517,8 +522,8 @@ def main(default_values):
     try:
         datafile.write()
     except IOError:
-        problems.append("Cannot write in %s." % args.data_file)
-        exit_status = 'UNKNOWN'
+        nagios_result.messages.append("Cannot write in %s." % args.data_file)
+        nagios_result.status = 'CRITICAL'
 
     # parse data
 
@@ -543,8 +548,8 @@ def main(default_values):
         except DeviceError as err:
             traffic1 = dict()
             message = str(err).replace("'", "")
-            problems.append(message)
-            exit_status = 'CRITICAL'
+            nagios_result.messages.append(message)
+            nagios_result.status = 'CRITICAL'
 
     #
     # Data analysis
@@ -556,12 +561,13 @@ def main(default_values):
     if not if_data0:
         # The script did not gather the previous data.
         # This might be the first run.
-        if not problems:
-            problems.append("First run.")
+        if not nagios_result.messages:
+            nagios_result.messages("First run.")
     else:
         # get the time between the two metrics
         elapsed_time = time.time() - time0
         for if_name, if_data1 in traffic1.iteritems():
+
 
             if if_name not in if_data0:
                 # The interface was added between the last and the current run.
@@ -572,6 +578,8 @@ def main(default_values):
             #
             for counter in default_values['counters']:
 
+                nagios_service = Nagios_Service()
+                nagios_service.label = counter['prefix'] + if_name
                 # calculate the bytes
                 traffic_value = calc_diff(if_data0[if_name][counter['name']],
                                           uptime0,
@@ -582,60 +590,30 @@ def main(default_values):
                 traffic_value /= elapsed_time
 
                 #
-                # Decide a Nagios status
+                # Define service values
                 #
 
-                new_exit_status = nagios_value_status(traffic_value,
-                                                      args.bandwidth,
-                                                      args.critical,
-                                                      args.warning)
-                if new_exit_status != 'OK':
-                    problems.append("%s: %s/%s" %
-                                    (if_name, traffic_value, args.bandwidth))
-                exit_status = worst_status(exit_status, new_exit_status)
-
-                #
-                # Perfdata
-                #
-
-                # How to get perfdata values:
-                # perfdata format (in 1 line):
-                # (user_readable_message_for_nagios) | (label)=(value)(metric);
-                # (warn level);(crit level);(min level);(max level)
-
-                warn_level = int(args.warning) * (args.bandwidth / 100)
-                crit_level = int(args.critical) * (args.bandwidth / 100)
-                min_level = 0
-                max_level = int(args.bandwidth)
+                nagios_service.value = traffic_value
+                nagios_service.warn_level = int(args.warning) * (args.bandwidth / 100)
+                nagios_service.crit_level = int(args.critical) * (args.bandwidth / 100)
+                nagios_service.max_level = int(args.bandwidth)
 
                 if args.unit != default_values['_linux_unit']:
                     # convert to desired unit if asked
-                    traffic_value = convert_bytes(traffic_value, args.unit)
-                    warn_level = convert_bytes(warn_level, args.unit)
-                    crit_level = convert_bytes(crit_level, args.unit)
-                    min_level = convert_bytes(min_level, args.unit)
-                    max_level = convert_bytes(max_level, args.unit)
+                    nagios_service.value = convert_bytes(nagios_service.value, args.unit)
+                    nagios_service.warn_level = convert_bytes(nagios_service.warn_level, args.unit)
+                    nagios_service.crit_level = convert_bytes(nagios_service.crit_level, args.unit)
+                    nagios_service.min_level = convert_bytes(nagios_service.min_level, args.unit)
+                    nagios_service.max_level = convert_bytes(nagios_service.max_level, args.unit)
 
-                # convert everything to string
-                traffic_value = "%.2fc" % traffic_value
-                warn_level = str(warn_level)
-                crit_level = str(crit_level)
-                min_level = str(min_level)
-                max_level = str(min_level)
-
-                perfdata.append(format_perfdata(counter['prefix'] + if_name,
-                                traffic_value, warn_level, crit_level,
-                                min_level, max_level))
+                nagios_result.add(nagios_service)
 
     #
     # Program output
     #
 
-    print "TRAFFIC %s: %s | %s " % (exit_status, ' '.join(problems),
-                                    ' '.join(perfdata))
-
-    # This is the exit code
-    sys.exit(_status_codes[exit_status])
+    print nagios_result
+    nagios_result.exit()
 
 if __name__ == '__main__':
     default_values = {}
