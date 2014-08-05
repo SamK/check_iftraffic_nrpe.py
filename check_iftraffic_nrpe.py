@@ -229,14 +229,6 @@ def calc_diff(value1, uptime1, value2, uptime2):
 #
 
 
-def nagios_value_status(value, max_value, percent_crit, percent_warn):
-    """Returns the string defining the Nagios status of the value"""
-    if value >= percent_crit * (max_value / 100):
-        return 'CRITICAL'
-    if value >= percent_warn * (max_value / 100):
-        return 'WARNING'
-    return 'OK'
-
 
 
 class Nagios_Service(object):
@@ -263,16 +255,13 @@ class Nagios_Service(object):
                 'min_level': self.min_level,
                 'max_level': self.max_level}
 
-
-    def status(self):
-        """ determines the Nagios status of the service.
-        """
-
-        return nagios_value_status(self.value,
-                                   self.max_level,
-                                   self.crit_level,
-                                   self.warn_level)
-
+    def status(self, value)
+        """Returns the string defining the Nagios status of the value"""
+        if self.value >= self.crit_level:
+            return 'CRITICAL'
+        if self.value >= self.warn_level:
+            return 'WARNING'
+        return 'OK'
 
 class Nagios_Result(object):
 
