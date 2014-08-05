@@ -232,7 +232,7 @@ def calc_diff(value1, uptime1, value2, uptime2):
 def format_perfdata(label, value, warn_level, crit_level, min_level,
                     max_level):
     """Return the perfdata string of an item"""
-    return '%(label)s=%(value)s;' \
+    return '%(label)s=%(value).2fc;' \
            '%(warn_level)s;' \
            '%(crit_level)s;' \
            '%(min_level)s;' \
