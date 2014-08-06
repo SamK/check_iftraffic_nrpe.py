@@ -224,12 +224,6 @@ def calc_diff(value1, uptime1, value2, uptime2):
         # normal behaviour
         return value2 - value1
 
-#
-# Nagios related functions
-#
-
-
-
 
 class Nagios_Service(object):
     def __init__(self):
@@ -263,11 +257,19 @@ class Nagios_Service(object):
             return 'WARNING'
         return 'OK'
 
+
 class Nagios_Result(object):
 
     def __init__(self, name):
-        self.status_codes = {'OK': 0, 'WARNING': 1, 'CRITICAL': 2, 'UNKNOWN': 3}
-        self.status_order = ['CRITICAL', 'WARNING', 'UNKNOWN', 'OK']
+        self.status_codes = {'OK': 0,
+                             'WARNING': 1,
+                             'CRITICAL': 2,
+                             'UNKNOWN': 3}
+
+        self.status_order = ['CRITICAL',
+                             'WARNING',
+                             'UNKNOWN',
+                             'OK']
 
         #The list of the services appened to this Results instance
         self._services = []
@@ -404,10 +406,7 @@ def parse_arguments(default_values):
                       help="Define the maximum bandwidth (default %(default)s \
                             %(default_unit)s which is something around \
                             %(descr)s). If --units is specified, the value of \
-                            BANDWIDTH must in the same unit. \
-                            Examples for a gigabit interface: 1Gb = 1000Mb = 1000000kb = 125MB = 125000B. \
-                            For a megabit interface: 100MB = 100000kB = 100000000B = 800000000b. \
-                            " %
+                            BANDWIDTH must in the same unit." %
                             {'descr': default_values['bandwidth_descr'],
                              'default_unit': default_values['unit'],
                              'default': '%(default)s'})
@@ -482,7 +481,7 @@ def main(default_values):
             os.remove(args.data_file)
             if_data0 = None
             time0 = time.time()
-            nagios_result.messages.append("Data file upgrade, skipping this run.")
+            nagios_result.messages.append("Data file upgrade, skipping run.")
 
     #
     # Save current data
@@ -543,7 +542,6 @@ def main(default_values):
         elapsed_time = time.time() - time0
         for if_name, if_data1 in traffic1.iteritems():
 
-
             if if_name not in if_data0:
                 # The interface was added between the last and the current run.
                 continue
@@ -551,6 +549,7 @@ def main(default_values):
             #
             # Traffic calculation
             #
+
             for counter in default_values['counters']:
 
                 nagios_service = Nagios_Service()
@@ -571,12 +570,15 @@ def main(default_values):
                 nagios_service.value = traffic_value
                 nagios_service.max_level = float(args.bandwidth)
                 # convert percent levels given by user into real values
-                nagios_service.warn_level = float(args.warning) * args.bandwidth / 100
-                nagios_service.crit_level = float(args.critical) * args.bandwidth / 100
+                nagios_service.warn_level = float(args.warning) * \
+                                            args.bandwidth / 100
+                nagios_service.crit_level = float(args.critical) * \
+                                            args.bandwidth / 100
 
                 if args.unit != default_values['_system_unit']:
                     # convert to desired unit if asked
-                    nagios_service.value = convert_bytes(nagios_service.value, args.unit)
+                    nagios_service.value = convert_bytes(nagios_service.value,
+                                                         args.unit)
 
                 nagios_result.add(nagios_service)
 
@@ -595,7 +597,7 @@ if __name__ == '__main__':
     #
     default_values["bandwidth"] = 1000 * 1000 * 100 / 8
     default_values["bandwidth_descr"] = "100 Mbps"
-    default_values['_system_unit'] = 'Bps' # the traffic unit in /proc/net/dev
+    default_values['_system_unit'] = 'Bps'  # the traffic unit in /proc/net/dev
     default_values['unit'] = default_values['_system_unit']
 
     default_values["counters"] = [
