@@ -129,34 +129,34 @@ class Convert_Bytes(unittest.TestCase):
         # Test Bytes
         for value in self.sample_values:
             result = value
-            self.assertEqual(myscript.convert_bytes(value, 'B'), result)
+            self.assertEqual(myscript.convert_bytes(value, 'Bps'), result)
             result = value / self.multiple
-            self.assertEqual(myscript.convert_bytes(value, 'kB'), result)
+            self.assertEqual(myscript.convert_bytes(value, 'kBps'), result)
             result = value / ( pow(self.multiple, 2) )
-            self.assertEqual(myscript.convert_bytes(value, 'MB'), result)
+            self.assertEqual(myscript.convert_bytes(value, 'MBps'), result)
             result = value / ( pow(self.multiple, 3) )
-            self.assertEqual(myscript.convert_bytes(value, 'GB'), result)
+            self.assertEqual(myscript.convert_bytes(value, 'GBps'), result)
             result = value / ( pow(self.multiple, 4) )
-            self.assertEqual(myscript.convert_bytes(value, 'TB'), result)
+            self.assertEqual(myscript.convert_bytes(value, 'TBps'), result)
             # Test bits
     def test_convert_bytes_to_bits(self):
         # Test Bytes
         for value in self.sample_values:
-            self.assertEqual(myscript.convert_bytes(0, 'b'), 0)
-            self.assertEqual(myscript.convert_bytes(0, 'kb'), 0)
-            self.assertEqual(myscript.convert_bytes(0, 'Tb'), 0)
-            self.assertEqual(myscript.convert_bytes(1, 'b'), 8)
-            self.assertEqual(myscript.convert_bytes(1000, 'kb'), 8)
+            self.assertEqual(myscript.convert_bytes(0, 'bps'), 0)
+            self.assertEqual(myscript.convert_bytes(0, 'kbps'), 0)
+            self.assertEqual(myscript.convert_bytes(0, 'Tbps'), 0)
+            self.assertEqual(myscript.convert_bytes(1, 'bps'), 8)
+            self.assertEqual(myscript.convert_bytes(1000, 'kbps'), 8)
             result = 8 * value
-            self.assertEqual(myscript.convert_bytes(value, 'b'), result)
+            self.assertEqual(myscript.convert_bytes(value, 'bps'), result)
             result = 8 * value / self.multiple
-            self.assertEqual(myscript.convert_bytes(value, 'kb'), result)
+            self.assertEqual(myscript.convert_bytes(value, 'kbps'), result)
             result = 8 * value / ( pow(self.multiple, 2) )
-            self.assertEqual(myscript.convert_bytes(value, 'Mb'), result)
+            self.assertEqual(myscript.convert_bytes(value, 'Mbps'), result)
             result = 8 * value / ( pow(self.multiple, 3) )
-            self.assertEqual(myscript.convert_bytes(value, 'Gb'), result)
+            self.assertEqual(myscript.convert_bytes(value, 'Gbps'), result)
             result = 8 * value / ( pow(self.multiple, 4) )
-            self.assertEqual(myscript.convert_bytes(value, 'Tb'), result)
+            self.assertEqual(myscript.convert_bytes(value, 'Tbps'), result)
 
 if __name__ == "__main__":
     unittest.main()
