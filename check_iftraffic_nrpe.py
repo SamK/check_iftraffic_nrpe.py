@@ -536,7 +536,8 @@ def main(default_values):
         # The script did not gather the previous data.
         # This might be the first run.
         if not nagios_result.messages:
-            nagios_result.messages("First run.")
+            # TODO: what is the condition to go here?
+            nagios_result.messages.append("First run.")
     else:
         # get the time between the two metrics
         elapsed_time = time.time() - time0
