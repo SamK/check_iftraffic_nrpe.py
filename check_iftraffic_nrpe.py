@@ -226,6 +226,8 @@ def calc_diff(value1, uptime1, value2, uptime2):
 
 
 class NagiosService(object):
+    """Defines a Nagios service with a Perfdata output
+    """
     def __init__(self):
         self.label = None
         self.value = None
@@ -259,6 +261,8 @@ class NagiosService(object):
 
 
 class NagiosResult(object):
+    """A Nagios Result output with services in it
+    """
 
     def __init__(self, name):
         self.status_codes = {'OK': 0,
