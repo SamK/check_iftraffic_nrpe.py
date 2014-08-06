@@ -50,7 +50,7 @@ Set warning value to 80% (default: warning=85, critical=98):
     check_iftraffic_nrpe.py -w 80
 
 Define a Gigabit interface.
-All commands below define the same bandwith but using different units of metrics.
+All commands below define the same bandwith but output different units of metrics.
 
     check_iftraffic_nrpe.py --bandwidth=125000     # default unit is Bps
     check_iftraffic_nrpe.py --bandwidth=125        --unit=kBps
