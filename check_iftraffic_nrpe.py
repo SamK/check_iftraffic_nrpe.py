@@ -284,13 +284,20 @@ class NagiosResult(object):
         self.perfdata = ''
 
     def __str__(self):
-        # Prints the final result
+        """Return the output of a Nagios check"""
+
+        # The name and the status
         output = "%s %s" % (self.name, self.status)
+
+        # Some messages if existing
         if self.messages:
             output += ": " + ' '.join(self.messages)
+
+        # perfdata
         output += ' |'
         for service in self._services:
             output += " %s" % service
+
         return output
 
     def worst(self, status1, status2):
