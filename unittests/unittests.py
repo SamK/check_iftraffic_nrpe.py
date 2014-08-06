@@ -67,38 +67,6 @@ class Uptime(unittest.TestCase):
         self.assertEqual(myscript.uptime(), self.expected_result)
 
 
-class Worst_Status(unittest.TestCase):
-    def test(self):
-        status_order = ['CRITICAL', 'WARNING', 'UNKNOWN', 'OK']
-        self.assertEqual(myscript.worst_status('CRITICAL','CRITICAL'), 'CRITICAL')
-        self.assertEqual(myscript.worst_status('CRITICAL', 'WARNING'), 'CRITICAL')
-        self.assertEqual(myscript.worst_status('CRITICAL', 'UNKNOWN'), 'CRITICAL')
-        self.assertEqual(myscript.worst_status('CRITICAL', 'OK'), 'CRITICAL')
-        self.assertEqual(myscript.worst_status('WARNING', 'CRITICAL'), 'CRITICAL')
-        self.assertEqual(myscript.worst_status('WARNING','WARNING'), 'WARNING')
-        self.assertEqual(myscript.worst_status('WARNING','UNKNOWN'), 'WARNING')
-        self.assertEqual(myscript.worst_status('WARNING','OK'), 'WARNING')
-        self.assertEqual(myscript.worst_status('OK', 'CRITICAL'), 'CRITICAL')
-        self.assertEqual(myscript.worst_status('OK', 'WARNING'), 'WARNING')
-        self.assertEqual(myscript.worst_status('OK', 'UNKNOWN'), 'UNKNOWN')
-        self.assertEqual(myscript.worst_status('OK','OK'), 'OK')
-
-
-class Nagios_Value_Status(unittest.TestCase):
-    """ def nagios_value_status(value, max_value, percent_crit, percent_warn):
-        Returns the string defining the Nagios status of the value
-    """
-    def exec_test(self, value, result):
-        self.assertEqual(myscript.nagios_value_status(value,100,90, 80), result)
-
-    def test(self):
-        self.exec_test(0, 'OK')
-        self.exec_test(50, 'OK')
-        self.exec_test(80, 'WARNING')
-        self.exec_test(81, 'WARNING')
-        self.exec_test(90, 'CRITICAL')
-        self.exec_test(91, 'CRITICAL')
-
 class Specify_Devices(unittest.TestCase):
     def setUp(self):
         self.devices = myscript.ProcNetDev().parse(myscript.ProcNetDev().read())
@@ -157,6 +125,60 @@ class Convert_Bytes(unittest.TestCase):
             self.assertEqual(myscript.convert_bytes(value, 'Gbps'), result)
             result = 8 * value / ( pow(self.multiple, 4) )
             self.assertEqual(myscript.convert_bytes(value, 'Tbps'), result)
+
+"""
+class Nagios_Service(unittest.TestCase):
+    def setUp(self):
+        service = Nagios_Service()
+    def test_init(self):
+    def test_str(self):
+    def test_status(self):
+
+    def exec_test_status(self, value, result):
+        self.assertEqual(myscript.nagios_value_status(value,100,90, 80), result)
+
+    def test_status(self):
+        self.exec_test_status(0, 'OK')
+        self.exec_test_status(50, 'OK')
+        self.exec_test_status(80, 'WARNING')
+        self.exec_test_status(81, 'WARNING')
+        self.exec_test_status(90, 'CRITICAL')
+        self.exec_test_status(91, 'CRITICAL')
+
+
+"""
+
+class Nagios_Result(object):
+    def setUp(self):
+        self.result = myscript.Nagios_Result("Test Result")
+
+    def test_init(self):
+        pass
+
+    def test_str(self):
+        self.assertIsString(self.result.__str__())
+
+    def test_worst(self):
+        self.assertEqual(self.result.worst_status('CRITICAL','CRITICAL'), 'CRITICAL')
+        self.assertEqual(self.result.worst_status('CRITICAL', 'WARNING'), 'CRITICAL')
+        self.assertEqual(self.result.worst_status('CRITICAL', 'UNKNOWN'), 'CRITICAL')
+        self.assertEqual(self.result.worst_status('CRITICAL', 'OK'), 'CRITICAL')
+        self.assertEqual(self.result.worst_status('WARNING', 'CRITICAL'), 'CRITICAL')
+        self.assertEqual(self.result.worst_status('WARNING','WARNING'), 'WARNING')
+        self.assertEqual(self.result.worst_status('WARNING','UNKNOWN'), 'WARNING')
+        self.assertEqual(self.result.worst_status('WARNING','OK'), 'WARNING')
+        self.assertEqual(self.result.worst_status('OK', 'CRITICAL'), 'CRITICAL')
+        self.assertEqual(self.result.worst_status('OK', 'WARNING'), 'WARNING')
+        self.assertEqual(self.result.worst_status('OK', 'UNKNOWN'), 'UNKNOWN')
+        self.assertEqual(self.result.worst_status('OK','OK'), 'OK')
+
+
+    def test_exit(self):
+        with self.assertRaises(SystemExit):
+            self.result.exit()
+
+    def test_add(self):
+        pass
 
 if __name__ == "__main__":
     unittest.main()
