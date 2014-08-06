@@ -357,7 +357,9 @@ def convert_bytes(value, unit):
         value *= 8
 
     for single_unit in ['k', 'M', 'G', 'T']:
+        print "Value: ", value, type(value)
         value = value / 1000
+        print "/1000 = ", value
         if single_unit == multiple_unit:
             return value
     raise Exception("Cannot parse %s" % unit)
@@ -369,7 +371,7 @@ def parse_arguments(default_values):
     global __version__
 
     unit_choices = ['Bps', 'kBps', 'MBps', 'GBps', 'TBps',
-                    'bps', 'kBps', 'Mbps', 'Gbps', 'Tbps']
+                    'bps', 'kbps', 'Mbps', 'Gbps', 'Tbps']
 
     version_string = "%(prog)s-%(version)s by %(author)s" % \
         {"prog": "%(prog)s", "version": __version__, "author": __author__}
@@ -564,17 +566,14 @@ def main(default_values):
                 #
 
                 nagios_service.value = traffic_value
-                nagios_service.warn_level = int(args.warning) * args.bandwidth / 100
-                nagios_service.crit_level = int(args.critical) * args.bandwidth / 100
-                nagios_service.max_level = int(args.bandwidth)
+                nagios_service.max_level = float(args.bandwidth)
+                # convert percent levels into real values
+                nagios_service.warn_level = float(args.warning) * args.bandwidth / 100
+                nagios_service.crit_level = float(args.critical) * args.bandwidth / 100
 
                 if args.unit != default_values['_system_unit']:
                     # convert to desired unit if asked
                     nagios_service.value = convert_bytes(nagios_service.value, args.unit)
-                    nagios_service.warn_level = convert_bytes(nagios_service.warn_level, args.unit)
-                    nagios_service.crit_level = convert_bytes(nagios_service.crit_level, args.unit)
-                    nagios_service.min_level = convert_bytes(nagios_service.min_level, args.unit)
-                    nagios_service.max_level = convert_bytes(nagios_service.max_level, args.unit)
 
                 nagios_result.add(nagios_service)
 
@@ -593,7 +592,7 @@ if __name__ == '__main__':
     #
     default_values["bandwidth"] = 1000 * 1000 * 100 / 8
     default_values["bandwidth_descr"] = "100 Mbps"
-    default_values['_system_unit'] = 'Bps'
+    default_values['_system_unit'] = 'Bps' # the traffic unit in /proc/net/dev
     default_values['unit'] = default_values['_system_unit']
 
     default_values["counters"] = [
