@@ -357,9 +357,7 @@ def convert_bytes(value, unit):
         value *= 8
 
     for single_unit in ['k', 'M', 'G', 'T']:
-        print "Value: ", value, type(value)
         value = value / 1000
-        print "/1000 = ", value
         if single_unit == multiple_unit:
             return value
     raise Exception("Cannot parse %s" % unit)
