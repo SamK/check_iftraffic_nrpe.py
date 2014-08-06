@@ -265,7 +265,7 @@ class Nagios_Service(object):
 
 class Nagios_Result(object):
 
-    def __init__(self):
+    def __init__(self, name):
         self.status_codes = {'OK': 0, 'WARNING': 1, 'CRITICAL': 2, 'UNKNOWN': 3}
         self.status_order = ['CRITICAL', 'WARNING', 'UNKNOWN', 'OK']
 
@@ -273,7 +273,7 @@ class Nagios_Result(object):
         self._services = []
 
         #The final perfdata string
-        self.name = 'Traffic'
+        self.name = name
         self.status = 'UNKNOWN'
         self.messages = []
         self.perfdata = ''
@@ -448,7 +448,7 @@ def main(default_values):
     problems = []
     ifdetect = InterfaceDetection()
 
-    nagios_result = Nagios_Result()
+    nagios_result = Nagios_Result("Traffic %s" % args.unit)
     #
     # Read current data
     #
@@ -564,8 +564,8 @@ def main(default_values):
                 #
 
                 nagios_service.value = traffic_value
-                nagios_service.warn_level = int(args.warning) * (args.bandwidth / 100)
-                nagios_service.crit_level = int(args.critical) * (args.bandwidth / 100)
+                nagios_service.warn_level = int(args.warning) * args.bandwidth / 100
+                nagios_service.crit_level = int(args.critical) * args.bandwidth / 100
                 nagios_service.max_level = int(args.bandwidth)
 
                 if args.unit != default_values['_linux_unit']:
@@ -590,6 +590,7 @@ if __name__ == '__main__':
     default_values["warning"] = 85
     default_values["critical"] = 98
     default_values["data_file"] = '/var/tmp/traffic_stats.dat'
+    #
     default_values["bandwidth"] = 1000 * 1000 * 100 / 8
     default_values["bandwidth_descr"] = "100 Mb"
     default_values['_linux_unit'] = 'B'
