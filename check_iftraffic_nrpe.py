@@ -274,7 +274,7 @@ class Nagios_Result(object):
 
         #The final perfdata string
         self.name = name
-        self.status = 'UNKNOWN'
+        self.status = 'OK'
         self.messages = []
         self.perfdata = ''
 
@@ -406,7 +406,10 @@ def parse_arguments(default_values):
                       help="Define the maximum bandwidth (default %(default)s \
                             %(default_unit)s which is something around \
                             %(descr)s). If --units is specified, the value of \
-                            BANDWIDTH must in the same unit." %
+                            BANDWIDTH must in the same unit. \
+                            Examples for a gigabit interface: 1Gb = 1000Mb = 1000000kb = 125MB = 125000B. \
+                            For a megabit interface: 100MB = 100000kB = 100000000B = 800000000b. \
+                            " %
                             {'descr': default_values['bandwidth_descr'],
                              'default_unit': default_values['unit'],
                              'default': '%(default)s'})
@@ -470,6 +473,7 @@ def main(default_values):
         # This might be the first run.
         if not problems:
             nagios_result.messages.append("First run.")
+            nagios_result.status = 'UNKNOWN'
     else:
         uptime0, procnetdev0 = datafile.read()
         time0 = datafile.mtime()
@@ -567,7 +571,7 @@ def main(default_values):
 
                 nagios_service.value = traffic_value
                 nagios_service.max_level = float(args.bandwidth)
-                # convert percent levels into real values
+                # convert percent levels given by user into real values
                 nagios_service.warn_level = float(args.warning) * args.bandwidth / 100
                 nagios_service.crit_level = float(args.critical) * args.bandwidth / 100
 
