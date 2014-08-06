@@ -279,10 +279,6 @@ class Nagios_Result(object):
         self.perfdata = ''
 
     def __str__(self):
-        # define the result status
-        for service in self._services:
-            self.status = self.worst(service.status(), self.status)
-
         # Prints the final result
         output = "%s %s" % (self.name, self.status)
         if self.messages:
@@ -304,9 +300,10 @@ class Nagios_Result(object):
         """
         sys.exit(self.status_codes[self.status])
 
-    def add(self, service):
-        self._services.append(service)
-        self.status = self.worst(service.status, self.status)
+    def add(self, new_service):
+        self.status = self.worst(self.status, new_service.status)
+        self._services.append(new_service)
+
 
 #
 # User arguments related functions
