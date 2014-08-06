@@ -235,7 +235,6 @@ class NagiosService(object):
         self.max_level = None
         self.warn_level = None
         self.crit_level = None
-        self.perdata = ''
 
     def __str__(self):
         """Return the perfdata string"""
