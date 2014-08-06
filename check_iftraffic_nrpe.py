@@ -313,6 +313,8 @@ class NagiosResult(object):
         sys.exit(self.status_codes[self.status])
 
     def add(self, new_service):
+        """ Add a NagiosService object in the Nagios results
+        """
         self.status = self.worst(self.status, new_service.status)
         self._services.append(new_service)
 
