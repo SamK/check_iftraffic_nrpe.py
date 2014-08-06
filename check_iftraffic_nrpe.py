@@ -528,9 +528,6 @@ def main(default_values):
     # Data analysis
     #
 
-    # calculate the results and the output
-    perfdata = []
-
     if not if_data0:
         # The script did not gather the previous data.
         # This might be the first run.
