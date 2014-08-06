@@ -344,16 +344,16 @@ def convert_bytes(value, unit):
     """Convert bytes to something else"""
     # default is byte:
 
-    if unit == 'B':
+    if unit == 'Bps':
         return value
 
-    if unit == 'b':
+    if unit == 'bps':
         return value * 8
 
     multiple_unit = unit[0]
-    data_unit = unit[1]
+    data_unit = unit[1:]
 
-    if data_unit == 'b':
+    if data_unit == 'bps':
         value *= 8
 
     for single_unit in ['k', 'M', 'G', 'T']:
@@ -368,8 +368,8 @@ def parse_arguments(default_values):
     global __author__
     global __version__
 
-    unit_choices = ['B', 'kB', 'MB', 'GB', 'TB',
-                    'b', 'kB', 'Mb', 'Gb', 'Tb']
+    unit_choices = ['Bps', 'kBps', 'MBps', 'GBps', 'TBps',
+                    'bps', 'kBps', 'Mbps', 'Gbps', 'Tbps']
 
     version_string = "%(prog)s-%(version)s by %(author)s" % \
         {"prog": "%(prog)s", "version": __version__, "author": __author__}
@@ -568,7 +568,7 @@ def main(default_values):
                 nagios_service.crit_level = int(args.critical) * args.bandwidth / 100
                 nagios_service.max_level = int(args.bandwidth)
 
-                if args.unit != default_values['_linux_unit']:
+                if args.unit != default_values['_system_unit']:
                     # convert to desired unit if asked
                     nagios_service.value = convert_bytes(nagios_service.value, args.unit)
                     nagios_service.warn_level = convert_bytes(nagios_service.warn_level, args.unit)
@@ -592,9 +592,9 @@ if __name__ == '__main__':
     default_values["data_file"] = '/var/tmp/traffic_stats.dat'
     #
     default_values["bandwidth"] = 1000 * 1000 * 100 / 8
-    default_values["bandwidth_descr"] = "100 Mb"
-    default_values['_linux_unit'] = 'B'
-    default_values['unit'] = default_values['_linux_unit']
+    default_values["bandwidth_descr"] = "100 Mbps"
+    default_values['_system_unit'] = 'Bps'
+    default_values['unit'] = default_values['_system_unit']
 
     default_values["counters"] = [
         {"name": "rx_bytes", "prefix": "in-", "column": 0},
