@@ -3,7 +3,13 @@ check_iftraffic_nrpe.py
 
 This is a Nagios plugin to check network traffic with NRPE on Linux.
 This script has been created because I like writing Python scripts.
-It returns perfdata values in B/s (bytes per seconds).
+
+Here are some of the features:
+
+ * available units: (kilo|Mega|Giga|Tera)(Bytes|bits)
+ * excludes or includes interfaces based on name, regexp or type (type can be: "ethernet", "ppp", "loopback" or "sit")
+ * understands computer reboots
+ * understand counter resets (32bits or 64bits)
 
 Installation
 --------
@@ -43,9 +49,16 @@ Set warning value to 80% (default: warning=85, critical=98):
 
     check_iftraffic_nrpe.py -w 80
 
-Define a Gigabit interface (the value must be in bytes):
+Define a Gigabit interface.
+All commands below define the same bandwith but using different units of metrics.
 
-    check_iftraffic_nrpe.py --bandwidth=131072000
+    check_iftraffic_nrpe.py --bandwidth=125000     # default unit is Bps
+    check_iftraffic_nrpe.py --bandwidth=125        --unit=kBps
+    check_iftraffic_nrpe.py --bandwidth=0.125000   --unit=MBps
+    check_iftraffic_nrpe.py --bandwidth=1          --unit=Gbps
+    check_iftraffic_nrpe.py --bandwidth=1000       --unit=Mbps
+    check_iftraffic_nrpe.py --bandwidth=1000000    --unit=kbps
+    check_iftraffic_nrpe.py --bandwidth=1000000000 --unit=bps
 
 
 Contributing
