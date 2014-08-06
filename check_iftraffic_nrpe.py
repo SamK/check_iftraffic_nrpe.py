@@ -225,7 +225,7 @@ def calc_diff(value1, uptime1, value2, uptime2):
         return value2 - value1
 
 
-class Nagios_Service(object):
+class NagiosService(object):
     def __init__(self):
         self.label = None
         self.value = None
@@ -258,7 +258,7 @@ class Nagios_Service(object):
         return 'OK'
 
 
-class Nagios_Result(object):
+class NagiosResult(object):
 
     def __init__(self, name):
         self.status_codes = {'OK': 0,
@@ -450,7 +450,7 @@ def main(default_values):
     problems = []
     ifdetect = InterfaceDetection()
 
-    nagios_result = Nagios_Result("Traffic %s" % args.unit)
+    nagios_result = NagiosResult("Traffic %s" % args.unit)
     #
     # Read current data
     #
@@ -549,7 +549,7 @@ def main(default_values):
 
             for counter in default_values['counters']:
 
-                nagios_service = Nagios_Service()
+                nagios_service = NagiosService()
                 nagios_service.label = counter['prefix'] + if_name
                 # calculate the bytes
                 traffic_value = calc_diff(if_data0[if_name][counter['name']],
