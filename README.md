@@ -77,15 +77,7 @@ Print library documentation:
 
 Testing the code:
 
-    # Check Python syntax
-    pylint -E check_iftraffic_nrpe.py
-    # Follow PEP8 style guide:
-    pep8 --ignore=E111,E221,E701 --show-source --show-pep8 check_iftraffic_nrpe.py
-    # Execute unit tests
-    ./unittests/unittests.py
-    # Crazy lint
-    pylint -r n check_iftraffic_nrpe.py
-
+    ./tests/run.sh
 
 Author
 ------
