@@ -595,7 +595,7 @@ def main(default_values):
     # Program output
     #
 
-    print nagios_result
+    print (nagios_result)
     nagios_result.exit()
 
 if __name__ == '__main__':
