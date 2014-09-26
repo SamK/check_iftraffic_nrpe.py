@@ -14,8 +14,6 @@ class DeviceError(Exception):
 class InterfaceDetection(object):
 class DataFile():
 class ProcNetDev():
-
-
 """
 
 import struct
@@ -144,8 +142,6 @@ class Nagios_Service(unittest.TestCase):
         self.exec_test_status(81, 'WARNING')
         self.exec_test_status(90, 'CRITICAL')
         self.exec_test_status(91, 'CRITICAL')
-
-
 """
 
 class Nagios_Result(object):
@@ -180,5 +176,7 @@ class Nagios_Result(object):
     def test_add(self):
         pass
 
+
 if __name__ == "__main__":
+    print ("Python version: ", sys.version.split('\n', 1)[0])
     unittest.main()
