@@ -605,7 +605,8 @@ if __name__ == '__main__':
     default_values["data_file"] = '/var/tmp/traffic_stats.dat'
     default_values["bandwidth"] = 1000 * 1000 * 100 / 8
     default_values["bandwidth_descr"] = "100 Mbps"
-    default_values['_system_unit'] = 'Bps'  # the traffic unit from /proc/net/dev
+    # the traffic unit from /proc/net/dev
+    default_values['_system_unit'] = 'Bps'
     default_values['unit'] = default_values['_system_unit']
 
     default_values["counters"] = [
