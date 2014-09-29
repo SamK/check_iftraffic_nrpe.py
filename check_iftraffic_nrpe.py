@@ -193,8 +193,11 @@ class ProcNetDev(object):
 
 def uptime():
     """Returns the uptime in seconds (float)"""
-    with open('/proc/uptime', 'r') as file_obj:
-        return float(file_obj.readline().split()[0])
+    file_obj = open('/proc/uptime', 'r')
+    uptime = float(file_obj.readline().split()[0])
+    file_obj.close()
+    return uptime
+
 
 #
 # Calculation functions
