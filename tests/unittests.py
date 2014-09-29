@@ -2,7 +2,6 @@
 import os
 import sys
 import unittest
-import pep8
 
 
 sys.path.insert(0, os.path.dirname(__file__) + '/..')
@@ -165,7 +164,9 @@ class Nagios_Result(object):
 
 
     def test_exit(self):
-        with self.assertRaises(SystemExit):
+        try:
+            self.assertRaises(SystemExit)
+        finally:
             self.result.exit()
 
     def test_add(self):
