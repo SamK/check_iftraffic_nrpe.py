@@ -216,7 +216,7 @@ def calc_diff(value1, uptime1, value2, uptime2):
                 isinstance(val, long)):
             raise ValueError
     if uptime2 < uptime1:
-        #"The host rebooted. The values are wrong anyway.
+        # "The host rebooted. The values are wrong anyway.
         # value2 is the closest.
         return value2
     if value1 > value2:
@@ -276,10 +276,10 @@ class NagiosResult(object):
                              'UNKNOWN',
                              'OK']
 
-        #The list of the services appened to this Results instance
+        # The list of the services appened to this Results instance
         self._services = []
 
-        #The final perfdata string
+        # The final perfdata string
         self.name = name
         self.status = 'OK'
         self.messages = []
@@ -352,7 +352,7 @@ def specify_device(devices, data):
 
     datatmp = data.copy()
     for i in datatmp:
-        if not i in devices:
+        if i not in devices:
             del data[i]
 
 
@@ -442,7 +442,7 @@ def parse_arguments(default_values):
     g_filter_x.add_argument('-X', '--excludere', nargs='*',
                             help='exclude interface specified by regexp')
 
-    #p.add_argument('-B', '--total', action=store_true,
+    # p.add_argument('-B', '--total', action=store_true,
     #               help='calculate total of interfaces')
 
     return parser.parse_args()
