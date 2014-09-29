@@ -91,22 +91,20 @@ class Specify_Devices(unittest.TestCase):
 class Convert_Bytes(unittest.TestCase):
     def setUp(self):
        self.multiple = 1000
-       self.sample_values = [ 0, 1, 10, 100, 1000, 3214]
+       self.sample_values = [ 0, 1, 10, 100, 1000, 3214, 57665, 739373, 8635791]
+       self.byte_units = ['Bps', 'kBps', 'MBps', 'GBps', 'TBps']
+       self.bit_units = ['bps', 'kbps', 'Mbps', 'Gbps', 'Tbps']
+
 
     def test_convert_bytes(self):
         # Test Bytes
         for value in self.sample_values:
             result = value
-            self.assertEqual(myscript.convert_bytes(value, 'Bps'), result)
-            result = value / self.multiple
-            self.assertEqual(myscript.convert_bytes(value, 'kBps'), result)
-            result = value / ( pow(self.multiple, 2) )
-            self.assertEqual(myscript.convert_bytes(value, 'MBps'), result)
-            result = value / ( pow(self.multiple, 3) )
-            self.assertEqual(myscript.convert_bytes(value, 'GBps'), result)
-            result = value / ( pow(self.multiple, 4) )
-            self.assertEqual(myscript.convert_bytes(value, 'TBps'), result)
-            # Test bits
+            for unit in self.byte_units:
+                #print ("Convertion test:  %sB = %s%s" % (value, result, unit))
+                self.assertEqual(myscript.convert_bytes(value, unit), result, ("Convert %sB in %s" % (value, unit)))
+                result = result / self.multiple
+
     def test_convert_bytes_to_bits(self):
         # Test Bytes
         for value in self.sample_values:
@@ -116,15 +114,10 @@ class Convert_Bytes(unittest.TestCase):
             self.assertEqual(myscript.convert_bytes(1, 'bps'), 8)
             self.assertEqual(myscript.convert_bytes(1000, 'kbps'), 8)
             result = 8 * value
-            self.assertEqual(myscript.convert_bytes(value, 'bps'), result)
-            result = 8 * value / self.multiple
-            self.assertEqual(myscript.convert_bytes(value, 'kbps'), result)
-            result = 8 * value / ( pow(self.multiple, 2) )
-            self.assertEqual(myscript.convert_bytes(value, 'Mbps'), result)
-            result = 8 * value / ( pow(self.multiple, 3) )
-            self.assertEqual(myscript.convert_bytes(value, 'Gbps'), result)
-            result = 8 * value / ( pow(self.multiple, 4) )
-            self.assertEqual(myscript.convert_bytes(value, 'Tbps'), result)
+            for unit in self.bit_units:
+                #print ("Convertion test:  %sB = %s%s" % (value, result, unit))
+                self.assertEqual(myscript.convert_bytes(value, unit), result, ("Convert %sBps in %s" % (value, unit)))
+                result = result / self.multiple
 
 """
 class Nagios_Service(unittest.TestCase):
