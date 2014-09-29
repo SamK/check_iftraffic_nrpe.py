@@ -35,7 +35,7 @@ import sys
 import time
 import argparse
 
-__version__ = '0.8'
+__version__ = 'HEAD'
 __author__ = 'Samuel Krieg'
 
 #
