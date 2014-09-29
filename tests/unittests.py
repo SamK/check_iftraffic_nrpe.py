@@ -60,7 +60,9 @@ class Calc_Diff(unittest.TestCase):
 
 class Uptime(unittest.TestCase):
     def setUp(self):
-        self.expected_result = float(open('/proc/uptime','r').readline().split()[0])
+        f = open('/proc/uptime','r')
+        self.expected_result = float(f.readline().split()[0])
+        f.close()
     def test(self):
         self.assertEqual(myscript.uptime(), self.expected_result)
 
