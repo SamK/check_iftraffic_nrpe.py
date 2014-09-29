@@ -157,8 +157,8 @@ class ProcNetDev(object):
         _, rx_titles, tx_titles = titles.split("|")
 
         # transorm the titles into arrays
-        rx_titles = map(lambda a: "rx_" + a, rx_titles.split())
-        tx_titles = map(lambda a: "tx_" + a, tx_titles.split())
+        rx_titles = list(map(lambda a: "rx_" + a, rx_titles.split()))
+        tx_titles = list(map(lambda a: "tx_" + a, tx_titles.split()))
 
         # append the titles together
         titles = rx_titles + tx_titles
