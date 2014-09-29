@@ -581,10 +581,10 @@ def main(default_values):
                 nagios_service.value = traffic_value
                 nagios_service.max_level = float(args.bandwidth)
                 # convert percent levels given by user into real values
-                nagios_service.warn_level = float(args.warning) * \
-                                            args.bandwidth / 100
-                nagios_service.crit_level = float(args.critical) * \
-                                            args.bandwidth / 100
+                nagios_service.warn_level = (float(args.warning) *
+                                             args.bandwidth / 100)
+                nagios_service.crit_level = (float(args.critical) *
+                                             args.bandwidth / 100)
 
                 if args.unit != default_values['_system_unit']:
                     # convert to desired unit if asked
