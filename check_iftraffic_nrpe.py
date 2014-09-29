@@ -181,7 +181,9 @@ class ProcNetDev(object):
         """Returns the content of the /proc/net/dev file as is."""
         if filename is None:
             filename = self.filename
-        self.content = open(filename, "r").read()
+        f = open(filename, "r")
+        self.content = f.read()
+        f.close()
         return self.content
 
 #
