@@ -1,38 +1,79 @@
 #!/bin/bash
+#set -x
 set -e
 
-echo "Pylint errors"
-echo "============="
+function h1() {
+    echo $@
+    echo "==========="
+}
 
-pylint -E ./check_iftraffic_nrpe.py
+function h2() {
+    echo $@
+    echo "-----------"
+}
 
-echo "Pylint notifications"
-echo "===================="
+LOCAL_PATH=$HOME/.local
+VENV_PATH=$HOME/.virtualenv_iftraffic
 
-set +e
-pylint -r n ./check_iftraffic_nrpe.py
-set -e
+# python 2.x
+function create_venv() {
+    h2 Creating venv with : "virtualenv --python=$1 $2"
+    virtualenv --python=$1 $2
+    h2 sourcing from $2
+    source $2/bin/activate
+    h2 installing components
+    pip install pep8
+    pip install argpase
+    h2 deactivating
+    deactivate
+}
 
-echo "Unit tests"
-echo "=========="
+# python 3.x
+function create_pyvenv() {
+    h2 Creating pyvenv $2 with $1
+    $1 $2
+    h2 sourcing from $2
+    source $2/bin/activate
+    h2 installing components
+    pip install pep8
+    pip install argparse
+    h2 deactivating
+    deactivate
+}
 
-#echo test for Python 2.4
-#source ~/.virtualenv/env-2.4/bin/activate
-#./tests/unittests.py
-#deactivate
+function run_tests() {
+    h2 activating $1
+    source $1/bin/activate
+    h2 pylint
+    $PYTHON_BIN pylint -E ./check_iftraffic_nrpe.py
+    set +e
+    $PYTHON_BIN pylint -r n ./check_iftraffic_nrpe.py
+    set -e
+    h2 pep8
+    $PYTHON_BIN pep8 --ignore=E111,E221,E701,E127 --show-source --show-pep8 ./check_iftraffic_nrpe.py
+    h2 unittests
+    ./tests/unittests.py
+    h2 deactivating
+    deactivate
+}
 
-# test for local python
-/usr/bin/python ./tests/unittests.py
-pep8 --ignore=E111,E221,E701 --show-source --show-pep8 ./check_iftraffic_nrpe.py
+PYTHON_BIN=$LOCAL_PATH/bin/python2.4
+VENV_NAME=env-2.4
+h1 "Running tests for $PYTHON_BIN"
+create_venv $PYTHON_BIN $VENV_PATH/$VENV_NAME
+run_tests $VENV_PATH/$VENV_NAME
 
-# test for Python 2.7.3
-source ~/.virtualenv/env-2.7.3/bin/activate
-pep8 --ignore=E111,E221,E701,E127 --show-source --show-pep8 ./check_iftraffic_nrpe.py
-./tests/unittests.py
-deactivate
+PYTHON_BIN=$LOCAL_PATH/bin/python2.7
+VENV_NAME="env-2.7"
+h1 "Running tests for $PYTHON_BIN"
+create_venv $PYTHON_BIN $VENV_PATH/$VENV_NAME
+run_tests $VENV_PATH/$VENV_NAME
 
-# test for Python 3.4
-source ~/.virtualenv/pyvenv-3.4/bin/activate
-pep8 --ignore=E111,E221,E701 --show-source --show-pep8 ./check_iftraffic_nrpe.py
-./tests/unittests.py
-deactivate
+# python 3.4
+PYTHON_BIN=$LOCAL_PATH/bin/python3.4
+VENV_NAME="pyvenv-3.4"
+h1 "Running tests for $PYTHON_BIN"
+create_pyvenv $PYTHON_BIN $VENV_PATH/$VENV_NAME
+run_tests $PYTHON_BIN $VENV_PATH/$VENV_NAME
+
+
