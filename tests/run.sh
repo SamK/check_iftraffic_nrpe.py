@@ -115,14 +115,21 @@ function create_virtualenv(){
         if [ "$version" == "2.4" ]; then
             local VIRTUALENV="$PYTHON_PATH/bin/virtualenv-2.4"
             local PYTHON_BIN="$PYTHON_PATH/bin/python2.4"
-            local pip_pep8_version='==1.2'
+            local pep8_version='==1.2'
+            local pylint_version='==123'
         fi
         $PYTHON_BIN $VIRTUALENV $VENV_PATH/$version
         activate_virtualenv $version
-        echo pip install pep8$pip_pep8_version
-        pip install pep8$pip_pep8_version
+        echo "Executing \"pip install argparse$argparse_version\""
         pip install argparse
-        pip install pylint
+        if [ "$version" == "2.4" ]; then
+            # astroid wants unittest2 unittest2>=0.5.1
+            pip install 'unittest2==0.5.1'
+            # pylint installs astroid (which latests version is not 2.4 compatible)
+            pip install 'astroid==1.0.0'
+        fi
+        echo "Executing \"pip install pylint$pylint_version\""
+        #pip install pylint
         deactivate_virtualenv
     fi
 }
@@ -130,13 +137,16 @@ function create_virtualenv(){
 function run_tests() {
     local version=$1
     activate_virtualenv $version
-    h2 Using binary $PYTHON_BIN
-    $VENV_PATH/$version/bin/pylint -E ./check_iftraffic_nrpe.py
-    set +e
-    $VENV_PATH/$version/bin/pylint -r n ./check_iftraffic_nrpe.py
-    set -e
-    h2 pep8
-    $VENV_PATH/bin/pep8 --ignore=E111,E221,E701,E127 --show-source --show-pep8 ./check_iftraffic_nrpe.py
+    python -V
+    if [ "$version" != "2.4" ]; then
+        h2 Running $VENV_PATH/$version/bin/pylint
+        $VENV_PATH/$version/bin/pylint -E ./check_iftraffic_nrpe.py
+        set +e
+        $VENV_PATH/$version/bin/pylint -r n ./check_iftraffic_nrpe.py
+        set -e
+    fi
+    h2 Running $VENV_PATH/$version/bin/pep8
+    $VENV_PATH/$version/bin/pep8 --ignore=E111,E221,E701,E127 --show-source --show-pep8 ./check_iftraffic_nrpe.py
     h2 unittests
     ./tests/unittests.py
     h2 deactivating
@@ -154,7 +164,7 @@ function run_full_tests_version(){
     run_tests $version
 }
 
-run_full_tests_version 2.4
+#run_full_tests_version 2.4
 run_full_tests_version 2.7
 exit 0
 run_full_tests_version 3.4
