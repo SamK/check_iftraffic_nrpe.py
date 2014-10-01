@@ -115,12 +115,14 @@ function create_virtualenv(){
         if [ "$version" == "2.4" ]; then
             local VIRTUALENV="$PYTHON_PATH/bin/virtualenv-2.4"
             local PYTHON_BIN="$PYTHON_PATH/bin/python2.4"
-            local pip_pep8_args='==1.2'
+            local pip_pep8_version='==1.2'
         fi
         $PYTHON_BIN $VIRTUALENV $VENV_PATH/$version
         activate_virtualenv $version
+        echo pip install pep8$pip_pep8_version
         pip install pep8$pip_pep8_version
         pip install argparse
+        pip install pylint
         deactivate_virtualenv
     fi
 }
@@ -128,12 +130,13 @@ function create_virtualenv(){
 function run_tests() {
     local version=$1
     activate_virtualenv $version
-    $PYTHON_BIN pylint -E ./check_iftraffic_nrpe.py
+    h2 Using binary $PYTHON_BIN
+    $VENV_PATH/$version/bin/pylint -E ./check_iftraffic_nrpe.py
     set +e
-    $PYTHON_BIN pylint -r n ./check_iftraffic_nrpe.py
+    $VENV_PATH/$version/bin/pylint -r n ./check_iftraffic_nrpe.py
     set -e
     h2 pep8
-    $PYTHON_BIN pep8 --ignore=E111,E221,E701,E127 --show-source --show-pep8 ./check_iftraffic_nrpe.py
+    $VENV_PATH/bin/pep8 --ignore=E111,E221,E701,E127 --show-source --show-pep8 ./check_iftraffic_nrpe.py
     h2 unittests
     ./tests/unittests.py
     h2 deactivating
