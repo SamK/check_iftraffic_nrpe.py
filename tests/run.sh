@@ -2,6 +2,12 @@
 #set -x
 set -e
 
+
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+cd $DIR
+cd ..
+DIR="$( pwd )"
+
 function h1() {
     echo $@
     echo "==========="
@@ -12,39 +18,116 @@ function h2() {
     echo "-----------"
 }
 
-LOCAL_PATH=$HOME/.local
-VENV_PATH=$HOME/.virtualenv_iftraffic
+PYTHON_PATH=$DIR/python
+VENV_PATH=$DIR/virtualenv
+TMP=$DIR/tmp
+PKG_PREFIX="Python"
 
-# python 2.x
-function create_venv() {
-    h2 Creating venv with : "virtualenv --python=$1 $2"
-    virtualenv --python=$1 $2
-    h2 sourcing from $2
-    source $2/bin/activate
-    h2 installing components
-    pip install pep8
-    pip install argpase
-    h2 deactivating
+function prepare_tests(){
+    /bin/rm -rf $VENV_PATH
+    mkdir -p $PYTHON_PATH
+    mkdir -p $VENV_PATH
+    mkdir -p $TMP
+}
+
+function download_python() {
+    local version=$1
+    local foldername=$PKG_PREFIX-$version
+    local pkgname=$foldername.tgz
+
+    h2 Downloading Python $version
+    cd $TMP
+    if [ -f "$pkgname" ]; then
+        echo "File $pkgname already exists, not downlading."
+    else
+        wget -q https://www.python.org/ftp/python/$version/$pkgname
+    fi
+    cd ..
+}
+
+function install_python(){
+    local version=$1
+    local configure_opts=''
+    h2 installing Python $version
+
+    if [ -f $PYTHON_PATH/bin/python${version} ]; then
+        echo "Python-$version is already installed...skipping."
+    else
+        cd $TMP
+        tar xzf $PKG_PREFIX-$version.tgz
+        cd $PKG_PREFIX-$version
+        [ "$version" == "2.4" ] && sed -i 's/^#zlib/zlib/' Modules/Setup.dist
+        [ "$version" == "2.4" ] && sed -i.bak '/^#SSL/,/^$/ s/^#//' Modules/Setup.dist
+        [ "$version" == "2.4" ] && configure_opts="BASECFLAGS=-U_FORTIFY_SOURCE"
+        echo ./configure $configure_opts --prefix=${PYTHON_PATH} --with-ssl
+        ./configure $configure_opts --prefix=${PYTHON_PATH} --with-ssl
+        make
+        make install
+        cd ../..
+    fi
+}
+
+function download_virtualenv() {
+    local version=$1
+    local foldername=virtualenv-$version
+    local pkgname=$foldername.tar.gz
+    h1 downloading virtualenv $version
+    cd $TMP
+    if [ -f "$pkgname" ]; then
+        echo "File $pkgname already exists, not downlading."
+    else
+        wget -q http://pypi.python.org/packages/source/v/virtualenv/$pkgname
+    fi
+    cd ..
+}
+
+function install_virtualenv(){
+    local version=$1
+    h1 installing virtualenv $version
+    if [ "$version" == "1.7.2" -a -f $PYTHON_PATH/bin/virtualenv-2.4 ]; then
+        echo "virtualenv-$version is already installed...skipping."
+    else
+        cd $TMP
+        tar xzf virtualenv-$version.tar.gz
+        cd virtualenv-$version
+        $PYTHON_PATH/bin/python2.4 setup.py install
+        cd ../..
+    fi
+}
+
+function activate_virtualenv(){
+    local version=$1
+    source $VENV_PATH/$version/bin/activate
+}
+
+function deactivate_virtualenv(){
     deactivate
 }
 
-# python 3.x
-function create_pyvenv() {
-    h2 Creating pyvenv $2 with $1
-    $1 $2
-    h2 sourcing from $2
-    source $2/bin/activate
-    h2 installing components
-    pip install pep8
-    pip install argparse
-    h2 deactivating
-    deactivate
+function create_virtualenv(){
+    local version=$1
+    h2 Creating virtualenv $version
+    if [ -d $VENV_PATH/$version ]; then
+        echo "Virtual env $VENV_PATH/$version already exists."
+    else
+        local PYTHON_BIN="/usr/bin/python"
+        local VIRTUALENV="virtualenv"
+        if [ "$version" == "2.4" ]; then
+            local VIRTUALENV="$PYTHON_PATH/bin/virtualenv-2.4"
+            local PYTHON_BIN="$PYTHON_PATH/bin/python2.4"
+            local pip_pep8_args='==1.2'
+        fi
+        $PYTHON_BIN $VIRTUALENV $VENV_PATH/$version
+        activate_virtualenv $version
+        pip install pep8$pip_pep8_version
+        pip install argparse
+        deactivate_virtualenv
+    fi
 }
 
 function run_tests() {
-    h2 activating $1
-    source $1/bin/activate
-    h2 pylint
+    local version=$1
+    activate_virtualenv $version
     $PYTHON_BIN pylint -E ./check_iftraffic_nrpe.py
     set +e
     $PYTHON_BIN pylint -r n ./check_iftraffic_nrpe.py
@@ -57,23 +140,21 @@ function run_tests() {
     deactivate
 }
 
-PYTHON_BIN=$LOCAL_PATH/bin/python2.4
-VENV_NAME=env-2.4
-h1 "Running tests for $PYTHON_BIN"
-create_venv $PYTHON_BIN $VENV_PATH/$VENV_NAME
-run_tests $VENV_PATH/$VENV_NAME
+function run_full_tests_version(){
+    local version=$1
+    prepare_tests
+    download_python $version
+    install_python $version
+    download_virtualenv 1.7.2
+    install_virtualenv 1.7.2
+    create_virtualenv $version
+    run_tests $version
+}
 
-PYTHON_BIN=$LOCAL_PATH/bin/python2.7
-VENV_NAME="env-2.7"
-h1 "Running tests for $PYTHON_BIN"
-create_venv $PYTHON_BIN $VENV_PATH/$VENV_NAME
-run_tests $VENV_PATH/$VENV_NAME
-
-# python 3.4
-PYTHON_BIN=$LOCAL_PATH/bin/python3.4
-VENV_NAME="pyvenv-3.4"
-h1 "Running tests for $PYTHON_BIN"
-create_pyvenv $PYTHON_BIN $VENV_PATH/$VENV_NAME
-run_tests $PYTHON_BIN $VENV_PATH/$VENV_NAME
+run_full_tests_version 2.4
+run_full_tests_version 2.7
+exit 0
+run_full_tests_version 3.4
+ 
 
 
