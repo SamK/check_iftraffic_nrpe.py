@@ -57,7 +57,7 @@ function install_python(){
         tar xzf $PKG_PREFIX-$version.tgz
         cd $PKG_PREFIX-$version
         [ "$version" == "2.4" ] && sed -i 's/^#zlib/zlib/' Modules/Setup.dist
-        [ "$version" == "2.4" ] && sed -i.bak '/^#SSL/,/^$/ s/^#//' Modules/Setup.dist
+        [ "$version" == "2.4" ] && sed -i.bak '/^#_ssl/,/^$/ s/^#//' Modules/Setup.dist
         [ "$version" == "2.4" ] && configure_opts="BASECFLAGS=-U_FORTIFY_SOURCE"
         echo ./configure $configure_opts --prefix=${PYTHON_PATH} --with-ssl
         ./configure $configure_opts --prefix=${PYTHON_PATH} --with-ssl
