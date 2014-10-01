@@ -56,9 +56,12 @@ function install_python(){
         cd $TMP
         tar xzf $PKG_PREFIX-$version.tgz
         cd $PKG_PREFIX-$version
-        [ "$version" == "2.4" ] && sed -i 's/^#zlib/zlib/' Modules/Setup.dist
-        [ "$version" == "2.4" ] && sed -i.bak '/^#_ssl/,/^$/ s/^#//' Modules/Setup.dist
+        [ "$version" == "2.4" -o "$version" == "2.7" ] && sed -i 's/^#zlib/zlib/' Modules/Setup.dist
+        [ "$version" == "2.4" -o "$version" == "2.7" ] && sed -i '/^#_ssl/,/^$/ s/^#//' Modules/Setup.dist
+        # Avoid buffer overflow during "make"
         [ "$version" == "2.4" ] && configure_opts="BASECFLAGS=-U_FORTIFY_SOURCE"
+        # Avoid "No module named _sha256" during venv creation
+        [ "$version" == "2.7" ] && sed -i 's/^#_sha/_sha/' Modules/Setup.dist
         echo ./configure $configure_opts --prefix=${PYTHON_PATH} --with-ssl
         ./configure $configure_opts --prefix=${PYTHON_PATH} --with-ssl
         make
@@ -83,14 +86,15 @@ function download_virtualenv() {
 
 function install_virtualenv(){
     local version=$1
+    local python_version=$2
     h1 installing virtualenv $version
-    if [ "$version" == "1.7.2" -a -f $PYTHON_PATH/bin/virtualenv-2.4 ]; then
-        echo "virtualenv-$version is already installed...skipping."
+    if [ -f $PYTHON_PATH/bin/virtualenv-$python_version ]; then
+        echo "virtualenv-$python_version is already installed...skipping."
     else
         cd $TMP
         tar xzf virtualenv-$version.tar.gz
         cd virtualenv-$version
-        $PYTHON_PATH/bin/python2.4 setup.py install
+        $PYTHON_PATH/bin/python$python_version setup.py install
         cd ../..
     fi
 }
@@ -105,19 +109,19 @@ function deactivate_virtualenv(){
 }
 
 function create_virtualenv(){
+set -x
     local version=$1
     h2 Creating virtualenv $version
     if [ -d $VENV_PATH/$version ]; then
         echo "Virtual env $VENV_PATH/$version already exists."
     else
-        local PYTHON_BIN="/usr/bin/python"
-        local VIRTUALENV="virtualenv"
+        local PYTHON_BIN="$PYTHON_PATH/bin/python$version"
+        local VIRTUALENV="$PYTHON_PATH/bin/virtualenv-$version"
         if [ "$version" == "2.4" ]; then
-            local VIRTUALENV="$PYTHON_PATH/bin/virtualenv-2.4"
-            local PYTHON_BIN="$PYTHON_PATH/bin/python2.4"
             local pep8_version='==1.2'
             local pylint_version='==123'
         fi
+        echo "$PYTHON_BIN $VIRTUALENV $VENV_PATH/$version"
         $PYTHON_BIN $VIRTUALENV $VENV_PATH/$version
         activate_virtualenv $version
         echo "Executing \"pip install argparse$argparse_version\""
@@ -154,18 +158,19 @@ function run_tests() {
 }
 
 function run_full_tests_version(){
-    local version=$1
+    local python_version=$1
+    local virtualenv_version=$2
     prepare_tests
-    download_python $version
-    install_python $version
-    download_virtualenv 1.7.2
-    install_virtualenv 1.7.2
-    create_virtualenv $version
-    run_tests $version
+    download_python $python_version
+    install_python $python_version
+    download_virtualenv $virtualenv_version
+    install_virtualenv $virtualenv_version $python_version
+    create_virtualenv $python_version
+    run_tests $python_version
 }
 
-#run_full_tests_version 2.4
-run_full_tests_version 2.7
+#run_full_tests_version 2.4 1.7.2
+run_full_tests_version 2.7 1.11.6
 exit 0
 run_full_tests_version 3.4
  
