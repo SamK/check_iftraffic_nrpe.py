@@ -42,13 +42,13 @@ function download_python() {
     local pkgname=$foldername.tgz
 
     h2 Downloading Python $version
-    cd $TMP
     if [ -f "$pkgname" ]; then
         echo "File $pkgname already exists, not downlading."
     else
+        cd $TMP
         wget -q https://www.python.org/ftp/python/$version/$pkgname
+        cd ..
     fi
-    cd ..
 }
 
 function install_python(){
@@ -178,7 +178,7 @@ function run_full_tests_version(){
     run_tests $python_version
 }
 
-run_full_tests_version 2.4 1.7.2
+run_full_tests_version 2.4.4 1.7.2
 run_full_tests_version 2.7.8 1.11.6
 run_full_tests_version 3.4.1 1.11.6
  
