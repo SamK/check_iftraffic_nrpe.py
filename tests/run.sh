@@ -162,12 +162,15 @@ function create_pyvenv(){
     local python_version=$1
     local python_short_version=$( short_version $python_version )
     local PYTHON_BIN="$PYTHON_PATH/bin/python$python_short_version"
-    local PYVENV="$PYTHON_PATH/bin/pyvenv-$python_short_version"
+    local PYVENV_BIN="$PYTHON_PATH/bin/pyvenv-$python_short_version"
     h2 Creating pyvenv For Python $python_short_version
     if [ -d $VENV_PATH/$python_version ]; then
         echo "PyVenv $VENV_PATH/$python_version already exists."
     else
-        $PYTHON_BIN $VIRTUALENV $VENV_PATH/$python_version
+        $PYTHON_BIN $PYVENV_BIN $VENV_PATH/$python_short_version
+        activate_pyvenv $python_short_version
+        pip install pylint
+        deactivate_pyvenv
     fi
 }
 
@@ -222,7 +225,8 @@ function run_full_tests_version(){
 #   - proxy:  error:14090086:SSL routines:SSL3_GET_SERVER_CERTIFICATE:certificate verify failed
 #run_full_tests_version 2.7.8 1.11.6
 
-# pyvenv
+# pip install pylint
+#   - tsocks: timeout
 run_full_tests_version 3.4.1 1.11.6
  
 echo '##############'
