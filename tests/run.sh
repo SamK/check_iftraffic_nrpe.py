@@ -177,7 +177,11 @@ function run_tests() {
     local version=$1
     local python_short_version=$( short_version $version )
     h2 "run_tests()"
-    activate_virtualenv $python_short_version
+    if [ "${python_version:0:1}" == "3" ]; then
+        activate_pyvenv $python_short_version
+    else
+        activate_virtualenv $python_short_version
+    fi
     python -V
     if [ "$version" != "2.4" ]; then
         h2 Running $VENV_PATH/$version/bin/pylint
