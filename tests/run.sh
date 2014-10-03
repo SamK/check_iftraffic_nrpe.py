@@ -116,7 +116,6 @@ function deactivate_virtualenv(){
 }
 
 function create_virtualenv(){
-set -x
     local python_version=$1
     local python_short_version=$( short_version $python_version )
     h2 Creating virtualenv For Python $python_short_version
@@ -132,6 +131,7 @@ set -x
             local pylint_version='==123'
         fi
         $PYTHON_BIN $VIRTUALENV $VENV_PATH/$python_version
+        h2 a
         activate_virtualenv $python_version
         echo "Executing \"pip install argparse$argparse_version\""
         pip install argparse
@@ -143,13 +143,41 @@ set -x
         fi
         echo "Executing \"pip install pylint$pylint_version\""
         #pip install pylint
+        h2 b
         deactivate_virtualenv
+    fi
+}
+
+function activate_pyvenv(){
+    local version=$1
+    source $VENV_PATH/$version/bin/activate
+}
+
+function deactivate_pyvenv(){
+    deactivate
+}
+
+
+function create_pyvenv(){
+    local python_version=$1
+    local python_short_version=$( short_version $python_version )
+    local PYTHON_BIN="$PYTHON_PATH/bin/python$python_short_version"
+    local PYVENV="$PYTHON_PATH/bin/pyvenv-$python_short_version"
+    h2 Creating pyvenv For Python $python_short_version
+    if [ -d $VENV_PATH/$python_version ]; then
+        echo "PyVenv $VENV_PATH/$python_version already exists."
+    else
+        activate_pyvenv $python_version
+        $PYTHON_BIN $VIRTUALENV $VENV_PATH/$python_version
+        deactivate_pyvenv
     fi
 }
 
 function run_tests() {
     local version=$1
-    activate_virtualenv $version
+    local python_short_version=$( short_version $version )
+    h2 "run_tests()"
+    activate_virtualenv $python_short_version
     python -V
     if [ "$version" != "2.4" ]; then
         h2 Running $VENV_PATH/$version/bin/pylint
@@ -172,14 +200,27 @@ function run_full_tests_version(){
     prepare_tests
     download_python $python_version
     install_python $python_version
-    download_virtualenv $virtualenv_version
-    install_virtualenv $virtualenv_version $python_version
-    create_virtualenv $python_version
+    if [ "${python_version:0:1}" == "3" ]; then
+        echo "PYTHON 3"
+        create_pyvenv $python_version
+    else
+        echo PYTHON 2: $python_version
+        download_virtualenv $virtualenv_version
+        install_virtualenv $virtualenv_version $python_version
+        create_virtualenv $python_version
+    fi
     run_tests $python_version
 }
 
-run_full_tests_version 2.4.4 1.7.2
-run_full_tests_version 2.7.8 1.11.6
+# 2.4 plante a l'install de argparse :/
+#run_full_tests_version 2.4.4 1.7.2
+
+# pip install argparse:
+#   - tsocks timeout
+#   - proxy:  error:14090086:SSL routines:SSL3_GET_SERVER_CERTIFICATE:certificate verify failed
+#run_full_tests_version 2.7.8 1.11.6
+
+# pyvenv
 run_full_tests_version 3.4.1 1.11.6
  
 echo '##############'
