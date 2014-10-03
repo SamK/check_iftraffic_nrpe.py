@@ -167,7 +167,7 @@ function create_pyvenv(){
     if [ -d $VENV_PATH/$python_version ]; then
         echo "PyVenv $VENV_PATH/$python_version already exists."
     else
-        activate_pyvenv $python_version
+        activate_pyvenv $python_short_version
         $PYTHON_BIN $VIRTUALENV $VENV_PATH/$python_version
         deactivate_pyvenv
     fi
