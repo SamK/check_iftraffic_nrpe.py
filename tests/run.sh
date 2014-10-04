@@ -2,6 +2,10 @@
 #set -x
 set -e
 
+function execute(){
+    echo "> \"$*\""
+    $*
+}
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd $DIR
@@ -30,10 +34,10 @@ short_version(){
 }
 
 function prepare_tests(){
-    /bin/rm -rf $VENV_PATH
-    mkdir -p $PYTHON_PATH
-    mkdir -p $VENV_PATH
-    mkdir -p $TMP
+    execute /bin/rm -rf $VENV_PATH
+    execute mkdir -p $PYTHON_PATH
+    execute mkdir -p $VENV_PATH
+    execute mkdir -p $TMP
 }
 
 function download_python() {
@@ -45,9 +49,9 @@ function download_python() {
         echo "File $pkgname already exists, not downlading."
     else
         h2 Downloading Python $version
-        cd $TMP
-        wget -q https://www.python.org/ftp/python/$version/$pkgname
-        cd ..
+        execute cd $TMP
+        execute wget -q https://www.python.org/ftp/python/$version/$pkgname
+        execute cd ..
     fi
 }
 
@@ -60,20 +64,19 @@ function install_python(){
     if [ -f $PYTHON_PATH/bin/python${short_version} ]; then
         echo "Python-$version is already installed...skipping."
     else
-        cd $TMP
-        tar xzf $PKG_PREFIX-$version.tgz
-        cd $PKG_PREFIX-$version
-        [ "$short_version" == "2.4" -o "$short_version" == "2.7" ] && sed -i 's/^#zlib/zlib/' Modules/Setup.dist
-        [ "$short_version" == "2.4" -o "$short_version" == "2.7" ] && sed -i '/^#_ssl/,/^$/ s/^#//' Modules/Setup.dist
+        execute cd $TMP
+        execute tar xzf $PKG_PREFIX-$version.tgz
+        execute cd $PKG_PREFIX-$version
+        [ "$short_version" == "2.4" -o "$short_version" == "2.7" ] && execute sed -i 's/^#zlib/zlib/' Modules/Setup.dist
+        [ "$short_version" == "2.4" -o "$short_version" == "2.7" ] && execute sed -i '/^#_ssl/,/^$/ s/^#//' Modules/Setup.dist
         # Avoid buffer overflow during "make"
         [ "$short_version" == "2.4" ] && configure_opts="BASECFLAGS=-U_FORTIFY_SOURCE"
         # Avoid "No module named _sha256" during venv creation
-        [ "$short_version" == "2.7" ] && sed -i 's/^#_sha/_sha/' Modules/Setup.dist
-        echo ./configure $configure_opts --prefix=${PYTHON_PATH} --with-ssl
-        ./configure $configure_opts --prefix=${PYTHON_PATH} --with-ssl
-        make
-        make install
-        cd ../..
+        [ "$short_version" == "2.7" ] && execute sed -i 's/^#_sha/_sha/' Modules/Setup.dist
+        execute ./configure $configure_opts --prefix=${PYTHON_PATH} --with-ssl
+        execute make
+        execute make install
+        execute cd ../..
     fi
 }
 
@@ -82,13 +85,13 @@ function download_virtualenv() {
     local foldername=virtualenv-$version
     local pkgname=$foldername.tar.gz
     h1 downloading virtualenv $version
-    cd $TMP
+    execute cd $TMP
     if [ -f "$pkgname" ]; then
         echo "File $pkgname already exists, not downlading."
     else
-        wget -q http://pypi.python.org/packages/source/v/virtualenv/$pkgname
+        execute wget -q http://pypi.python.org/packages/source/v/virtualenv/$pkgname
     fi
-    cd ..
+    execute cd ..
 }
 function install_virtualenv(){
     local version=$1
@@ -98,21 +101,21 @@ function install_virtualenv(){
     if [ -f $PYTHON_PATH/bin/virtualenv-$python_short_version ]; then
         echo "virtualenv-$python_short_version is already installed...skipping."
     else
-        cd $TMP
-        tar xzf virtualenv-$version.tar.gz
-        cd virtualenv-$version
-        $PYTHON_PATH/bin/python$python_short_version setup.py install
-        cd ../..
+        execute cd $TMP
+        execute tar xzf virtualenv-$version.tar.gz
+        execute cd virtualenv-$version
+        execute $PYTHON_PATH/bin/python$python_short_version setup.py install
+        execute cd ../..
     fi
 }
 
 function activate_virtualenv(){
     local version=$1
-    source $VENV_PATH/$version/bin/activate
+    execute source $VENV_PATH/$version/bin/activate
 }
 
 function deactivate_virtualenv(){
-    deactivate
+    execute deactivate
 }
 
 function create_virtualenv(){
@@ -166,10 +169,10 @@ function create_pyvenv(){
     if [ -d $VENV_PATH/$python_version ]; then
         echo "PyVenv $VENV_PATH/$python_version already exists."
     else
-        $PYTHON_BIN $PYVENV_BIN $VENV_PATH/$python_short_version
-        activate_pyvenv $python_short_version
-        pip install pylint
-        deactivate_pyvenv
+        execute $PYTHON_BIN $PYVENV_BIN $VENV_PATH/$python_short_version
+        execute activate_pyvenv $python_short_version
+        execute pip install pylint
+        execute deactivate_pyvenv
     fi
 }
 
