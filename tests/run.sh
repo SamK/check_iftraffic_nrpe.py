@@ -12,6 +12,8 @@ cd $DIR
 cd ..
 DIR="$( pwd )"
 
+FINAL_MSG=''
+
 function h1() {
     echo $@
     echo "==========="
@@ -38,9 +40,7 @@ function download_python() {
     local foldername=$PKG_PREFIX-$version
     local pkgname=$foldername.tgz
 
-    if [ -f "/${TMP}/${pkgname}" ]; then
-        echo "File $pkgname already exists, not downlading."
-    else
+    if [ ! -f "/${TMP}/${pkgname}" ]; then
         h2 Downloading Python $version
         execute cd $TMP
         execute wget -q https://www.python.org/ftp/python/$version/$pkgname
@@ -52,11 +52,8 @@ function install_python(){
     local version=$1
     local short_version=$( short_version $version )
     local configure_opts=''
-    h2 installing Python $version
-
-    if [ -f $PYTHON_PATH/bin/python${short_version} ]; then
-        echo "Python-$version is already installed...skipping."
-    else
+    if [ ! -f $PYTHON_PATH/bin/python${short_version} ]; then
+        h2 installing Python $version
         execute cd $TMP
         execute tar xzf $PKG_PREFIX-$version.tgz
         execute cd $PKG_PREFIX-$version
@@ -77,23 +74,19 @@ function download_virtualenv() {
     local version=$1
     local foldername=virtualenv-$version
     local pkgname=$foldername.tar.gz
-    h1 downloading virtualenv $version
-    execute cd $TMP
-    if [ -f "$pkgname" ]; then
-        echo "File $pkgname already exists, not downlading."
-    else
+    h2 downloading virtualenv $version
+    if [ ! -f "$TMP/$pkgname" ]; then
+        execute cd $TMP
         execute wget -q http://pypi.python.org/packages/source/v/virtualenv/$pkgname
+        execute cd ..
     fi
-    execute cd ..
 }
 function install_virtualenv(){
     local version=$1
     local python_version=$2
     local python_short_version=$( short_version $python_version )
-    h1 installing virtualenv $version
-    if [ -f $PYTHON_PATH/bin/virtualenv-$python_short_version ]; then
-        echo "virtualenv-$python_short_version is already installed...skipping."
-    else
+    if [ ! -f $PYTHON_PATH/bin/virtualenv-$python_short_version ]; then
+        h2 installing virtualenv $version
         execute cd $TMP
         execute tar xzf virtualenv-$version.tar.gz
         execute cd virtualenv-$version
@@ -114,20 +107,17 @@ function deactivate_virtualenv(){
 function create_virtualenv(){
     local python_version=$1
     local python_short_version=$( short_version $python_version )
-    h2 Creating virtualenv For Python $python_short_version
     local venv_dir="$VENV_PATH/$python_version"
-    if [ -d "$venv_dir" ]; then
-        echo "Virtual env \"$venv_dir\" already exists."
-    else
+    if [ ! -d "$venv_dir" ]; then
         local pep8_version=
         local pylint_version=
         local PYTHON_BIN="$PYTHON_PATH/bin/python$python_short_version"
         local VIRTUALENV="$PYTHON_PATH/bin/virtualenv-$python_short_version"
+        h2 Creating virtualenv for Python-$python_version $VIRTUALENV
         if [ "$python_short_version" == "2.4" ]; then
             pep8_version='==1.2'
         fi
         execute $PYTHON_BIN $VIRTUALENV $venv_dir
-        h2 a
         activate_virtualenv $python_version
         if [ "$python_short_version" == "2.7" ]; then
             execute pip install pep8
@@ -141,7 +131,6 @@ function create_virtualenv(){
         fi
         echo "Executing \"pip install pylint$pylint_version\""
         execute pip install pylint$pylint_version
-        h2 b
         deactivate_virtualenv
     fi
 }
@@ -176,7 +165,7 @@ function create_pyvenv(){
 function run_tests() {
     local version=$1
     local python_short_version=$( short_version $version )
-    h2 "run_tests()"
+    h1 "Running tests for Python-$version"
     if [ "${python_version:0:1}" == "3" ]; then
         activate_pyvenv $python_version
     else
@@ -186,9 +175,10 @@ function run_tests() {
         h2 Running $VENV_PATH/$python_version/bin/pylint
         set +e
         execute $VENV_PATH/$python_version/bin/pylint -E ./check_iftraffic_nrpe.py
-        [ "$?" == "0" ] || echo Errors during "pylint -E"
+        if [ "$?" == "0" ]; then
+            FINAL_MSG="${FINAL_MSG}Errors during pylint of Python $python_version\n"
+        fi
         execute $VENV_PATH/$python_version/bin/pylint -r n ./check_iftraffic_nrpe.py
-        [ "$?" == "0" ] || echo Errors during "pylint -r"
         set -e
     fi
     h2 Running $VENV_PATH/$python_version/bin/pep8
@@ -205,10 +195,8 @@ function run_full_tests_version(){
     download_python $python_version
     install_python $python_version
     if [ "${python_version:0:1}" == "3" ]; then
-        echo "PYTHON 3"
         create_pyvenv $python_version
     else
-        echo PYTHON 2: $python_version
         download_virtualenv $virtualenv_version
         install_virtualenv $virtualenv_version $python_version
         create_virtualenv $python_version
@@ -229,6 +217,8 @@ run_full_tests_version 2.7.8 1.11.6
 run_full_tests_version 3.4.1 1.11.6
  
 echo '##############'
-echo '#     OK     #'
+echo '#  finished  #'
 echo '##############'
+
+echo -e $FINAL_MSG
 
