@@ -67,12 +67,12 @@ function install_python(){
         execute cd $TMP
         execute tar xzf $PKG_PREFIX-$version.tgz
         execute cd $PKG_PREFIX-$version
-        [ "$short_version" == "2.4" -o "$short_version" == "2.7" ] && execute sed -i 's/^#zlib/zlib/' Modules/Setup.dist
-        [ "$short_version" == "2.4" -o "$short_version" == "2.7" ] && execute sed -i '/^#_ssl/,/^$/ s/^#//' Modules/Setup.dist
+        [ "$short_version" == "2.4" -o "$short_version" == "2.7" ] && sed -i 's/^#zlib/zlib/' Modules/Setup.dist
+        [ "$short_version" == "2.4" -o "$short_version" == "2.7" ] && sed -i '/^#_ssl/,/^$/ s/^#//' Modules/Setup.dist
         # Avoid buffer overflow during "make"
         [ "$short_version" == "2.4" ] && configure_opts="BASECFLAGS=-U_FORTIFY_SOURCE"
         # Avoid "No module named _sha256" during venv creation
-        [ "$short_version" == "2.7" ] && execute sed -i 's/^#_sha/_sha/' Modules/Setup.dist
+        [ "$short_version" == "2.7" ] && sed -i 's/^#_sha/_sha/' Modules/Setup.dist
         execute ./configure $configure_opts --prefix=${PYTHON_PATH} --with-ssl
         execute make
         execute make install
@@ -169,8 +169,8 @@ function create_pyvenv(){
     if [ -d $VENV_PATH/$python_version ]; then
         echo "PyVenv $VENV_PATH/$python_version already exists."
     else
-        execute $PYTHON_BIN $PYVENV_BIN $VENV_PATH/$python_short_version
-        execute activate_pyvenv $python_short_version
+        execute $PYTHON_BIN $PYVENV_BIN $VENV_PATH/$python_version
+        execute activate_pyvenv $python_version
         execute pip install pylint
         execute deactivate_pyvenv
     fi
@@ -181,20 +181,20 @@ function run_tests() {
     local python_short_version=$( short_version $version )
     h2 "run_tests()"
     if [ "${python_version:0:1}" == "3" ]; then
-        activate_pyvenv $python_short_version
+        activate_pyvenv $python_version
     else
-        activate_virtualenv $python_short_version
+        activate_virtualenv $python_version
     fi
     python -V
     if [ "$version" != "2.4" ]; then
-        h2 Running $VENV_PATH/$python_short_version/bin/pylint
-        execute $VENV_PATH/$python_short_version/bin/pylint -E ./check_iftraffic_nrpe.py
+        h2 Running $VENV_PATH/$python_version/bin/pylint
+        execute $VENV_PATH/$python_version/bin/pylint -E ./check_iftraffic_nrpe.py
         set +e
-        execute $VENV_PATH/$python_short_version/bin/pylint -r n ./check_iftraffic_nrpe.py
+        execute $VENV_PATH/$python_version/bin/pylint -r n ./check_iftraffic_nrpe.py
         set -e
     fi
-    h2 Running $VENV_PATH/$python_short_version/bin/pep8
-    execute $VENV_PATH/$python_short_version/bin/pep8 --ignore=E111,E221,E701,E127 --show-source --show-pep8 ./check_iftraffic_nrpe.py
+    h2 Running $VENV_PATH/$python_version/bin/pep8
+    execute $VENV_PATH/$python_version/bin/pep8 --ignore=E111,E221,E701,E127 --show-source --show-pep8 ./check_iftraffic_nrpe.py
     h2 unittests
     execute ./tests/unittests.py
     h2 deactivating
@@ -220,12 +220,12 @@ function run_full_tests_version(){
 }
 
 # 2.4 plante a l'install de argparse :/
-#run_full_tests_version 2.4.4 1.7.2
+run_full_tests_version 2.4.4 1.7.2
 
 # pip install argparse:
 #   - tsocks timeout
 #   - proxy:  error:14090086:SSL routines:SSL3_GET_SERVER_CERTIFICATE:certificate verify failed
-#run_full_tests_version 2.7.8 1.11.6
+run_full_tests_version 2.7.8 1.11.6
 
 # pip install pylint
 #   - tsocks: timeout
