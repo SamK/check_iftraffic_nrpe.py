@@ -3,7 +3,7 @@
 set -e
 
 function execute(){
-    echo "> \"$*\""
+    echo -e "> \e[90mDark \"$*\"\e[39mDefault"
     $*
 }
 
@@ -173,7 +173,7 @@ function run_tests() {
         h2 Running Pylint...
         set +e
         execute $VENV_PATH/$python_version/bin/pylint -E ./check_iftraffic_nrpe.py
-        if [ "$?" == "0" ]; then
+        if [ "$?" != "0" ]; then
             FINAL_MSG="${FINAL_MSG}Errors during pylint of Python $python_version\n"
         fi
         execute $VENV_PATH/$python_version/bin/pylint -r n ./check_iftraffic_nrpe.py
