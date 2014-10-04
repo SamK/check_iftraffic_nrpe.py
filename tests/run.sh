@@ -135,16 +135,18 @@ function create_virtualenv(){
         $PYTHON_BIN $VIRTUALENV $VENV_PATH/$python_version
         h2 a
         activate_virtualenv $python_version
-        echo "Executing \"pip install argparse$argparse_version\""
+        if [ "$python_short_version" == "2.7" ]; then
+            execute pip install pep8
+        fi
         if [ "$python_short_version" == "2.4" ]; then
-            pip install argparse
+            execute pip install argparse
             # astroid wants unittest2 unittest2>=0.5.1
-            pip install 'unittest2==0.5.1'
+            execute pip install 'unittest2==0.5.1'
             # pylint installs astroid (which latests version is not 2.4 compatible)
-            pip install 'astroid==1.0.0'
+            execute pip install 'astroid==1.0.0'
         fi
         echo "Executing \"pip install pylint$pylint_version\""
-        pip install pylint$pylint_version
+        execute pip install pylint$pylint_version
         h2 b
         deactivate_virtualenv
     fi
@@ -185,7 +187,6 @@ function run_tests() {
     else
         activate_virtualenv $python_version
     fi
-    python -V
     if [ "$version" != "2.4" ]; then
         h2 Running $VENV_PATH/$python_version/bin/pylint
         execute $VENV_PATH/$python_version/bin/pylint -E ./check_iftraffic_nrpe.py
@@ -220,7 +221,7 @@ function run_full_tests_version(){
 }
 
 # 2.4 plante a l'install de argparse :/
-run_full_tests_version 2.4.4 1.7.2
+#run_full_tests_version 2.4.4 1.7.2
 
 # pip install argparse:
 #   - tsocks timeout
