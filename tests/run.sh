@@ -136,8 +136,8 @@ function create_virtualenv(){
         h2 a
         activate_virtualenv $python_version
         echo "Executing \"pip install argparse$argparse_version\""
-        pip install argparse
         if [ "$python_short_version" == "2.4" ]; then
+            pip install argparse
             # astroid wants unittest2 unittest2>=0.5.1
             pip install 'unittest2==0.5.1'
             # pylint installs astroid (which latests version is not 2.4 compatible)
