@@ -3,7 +3,9 @@
 set -e
 
 function execute(){
-    echo -e "> \e[90mDark \"$*\"\e[39mDefault"
+    local default="\e[39m"
+    local gray="\e[90m"
+    echo -e "> ${gray}\"$*\"${default}"
     $*
 }
 
