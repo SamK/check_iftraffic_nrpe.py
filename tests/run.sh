@@ -141,7 +141,7 @@ function create_virtualenv(){
             pip install 'astroid==1.0.0'
         fi
         echo "Executing \"pip install pylint$pylint_version\""
-        #pip install pylint
+        pip install pylint$pylint_version
         h2 b
         deactivate_virtualenv
     fi
