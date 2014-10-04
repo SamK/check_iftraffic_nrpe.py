@@ -41,14 +41,14 @@ function download_python() {
     local foldername=$PKG_PREFIX-$version
     local pkgname=$foldername.tgz
 
-    h2 Downloading Python $version
-    cd $TMP
-    if [ -f "$pkgname" ]; then
+    if [ -f "/${TMP}/${pkgname}" ]; then
         echo "File $pkgname already exists, not downlading."
     else
+        h2 Downloading Python $version
+        cd $TMP
         wget -q https://www.python.org/ftp/python/$version/$pkgname
+        cd ..
     fi
-    cd ..
 }
 
 function install_python(){
