@@ -188,15 +188,15 @@ function run_tests() {
     python -V
     if [ "$version" != "2.4" ]; then
         h2 Running $VENV_PATH/$version/bin/pylint
-        $VENV_PATH/$version/bin/pylint -E ./check_iftraffic_nrpe.py
+        execute $VENV_PATH/$version/bin/pylint -E ./check_iftraffic_nrpe.py
         set +e
-        $VENV_PATH/$version/bin/pylint -r n ./check_iftraffic_nrpe.py
+        execute $VENV_PATH/$version/bin/pylint -r n ./check_iftraffic_nrpe.py
         set -e
     fi
     h2 Running $VENV_PATH/$version/bin/pep8
-    $VENV_PATH/$version/bin/pep8 --ignore=E111,E221,E701,E127 --show-source --show-pep8 ./check_iftraffic_nrpe.py
+    execute $VENV_PATH/$version/bin/pep8 --ignore=E111,E221,E701,E127 --show-source --show-pep8 ./check_iftraffic_nrpe.py
     h2 unittests
-    ./tests/unittests.py
+    execute ./tests/unittests.py
     h2 deactivating
     deactivate
 }
