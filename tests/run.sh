@@ -189,6 +189,7 @@ function run_tests() {
 }
 
 function run_full_tests_version(){
+    mkdir -p tmp virtualenv python
     local python_version=$1
     local virtualenv_version=$2
     download_python $python_version
