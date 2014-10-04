@@ -74,8 +74,8 @@ function download_virtualenv() {
     local version=$1
     local foldername=virtualenv-$version
     local pkgname=$foldername.tar.gz
-    h2 downloading virtualenv $version
     if [ ! -f "$TMP/$pkgname" ]; then
+        h2 downloading virtualenv $version
         execute cd $TMP
         execute wget -q http://pypi.python.org/packages/source/v/virtualenv/$pkgname
         execute cd ..
@@ -150,10 +150,8 @@ function create_pyvenv(){
     local python_short_version=$( short_version $python_version )
     local PYTHON_BIN="$PYTHON_PATH/bin/python$python_short_version"
     local PYVENV_BIN="$PYTHON_PATH/bin/pyvenv-$python_short_version"
-    h2 Creating pyvenv For Python $python_short_version
-    if [ -d $VENV_PATH/$python_version ]; then
-        echo "PyVenv $VENV_PATH/$python_version already exists."
-    else
+    if [ ! -d $VENV_PATH/$python_version ]; then
+        h2 Creating pyvenv For Python $python_short_version
         execute $PYTHON_BIN $PYVENV_BIN $VENV_PATH/$python_version
         execute activate_pyvenv $python_version
         execute pip install pylint
@@ -172,7 +170,7 @@ function run_tests() {
         activate_virtualenv $python_version
     fi
     if [ "$version" != "2.4" ]; then
-        h2 Running $VENV_PATH/$python_version/bin/pylint
+        h2 Running Pylint...
         set +e
         execute $VENV_PATH/$python_version/bin/pylint -E ./check_iftraffic_nrpe.py
         if [ "$?" == "0" ]; then
@@ -185,7 +183,6 @@ function run_tests() {
     execute $VENV_PATH/$python_version/bin/pep8 --ignore=E111,E221,E701,E127 --show-source --show-pep8 ./check_iftraffic_nrpe.py
     h2 unittests
     execute ./tests/unittests.py
-    h2 deactivating
     deactivate
 }
 
