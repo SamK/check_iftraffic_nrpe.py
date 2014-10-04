@@ -33,13 +33,6 @@ short_version(){
     echo $short_version
 }
 
-function prepare_tests(){
-    execute /bin/rm -rf $VENV_PATH
-    execute mkdir -p $PYTHON_PATH
-    execute mkdir -p $VENV_PATH
-    execute mkdir -p $TMP
-}
-
 function download_python() {
     local version=$1
     local foldername=$PKG_PREFIX-$version
@@ -122,8 +115,9 @@ function create_virtualenv(){
     local python_version=$1
     local python_short_version=$( short_version $python_version )
     h2 Creating virtualenv For Python $python_short_version
-    if [ -d $VENV_PATH/$python_version ]; then
-        echo "Virtual env $VENV_PATH/$python_version already exists."
+    local venv_dir="$VENV_PATH/$python_version"
+    if [ -d "$venv_dir" ]; then
+        echo "Virtual env \"$venv_dir\" already exists."
     else
         local pep8_version=
         local pylint_version=
@@ -132,7 +126,7 @@ function create_virtualenv(){
         if [ "$python_short_version" == "2.4" ]; then
             pep8_version='==1.2'
         fi
-        $PYTHON_BIN $VIRTUALENV $VENV_PATH/$python_version
+        execute $PYTHON_BIN $VIRTUALENV $venv_dir
         h2 a
         activate_virtualenv $python_version
         if [ "$python_short_version" == "2.7" ]; then
@@ -205,7 +199,6 @@ function run_tests() {
 function run_full_tests_version(){
     local python_version=$1
     local virtualenv_version=$2
-    prepare_tests
     download_python $python_version
     install_python $python_version
     if [ "${python_version:0:1}" == "3" ]; then
