@@ -168,6 +168,7 @@ function create_pyvenv(){
         execute $PYTHON_BIN $PYVENV_BIN $VENV_PATH/$python_version
         execute activate_pyvenv $python_version
         execute pip install pylint
+        execute pip install pep8
         execute deactivate_pyvenv
     fi
 }
@@ -183,9 +184,11 @@ function run_tests() {
     fi
     if [ "$version" != "2.4" ]; then
         h2 Running $VENV_PATH/$python_version/bin/pylint
-        execute $VENV_PATH/$python_version/bin/pylint -E ./check_iftraffic_nrpe.py
         set +e
+        execute $VENV_PATH/$python_version/bin/pylint -E ./check_iftraffic_nrpe.py
+        [ "$?" == "0" ] || echo Errors during "pylint -E"
         execute $VENV_PATH/$python_version/bin/pylint -r n ./check_iftraffic_nrpe.py
+        [ "$?" == "0" ] || echo Errors during "pylint -r"
         set -e
     fi
     h2 Running $VENV_PATH/$python_version/bin/pep8
