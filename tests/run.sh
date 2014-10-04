@@ -127,8 +127,7 @@ function create_virtualenv(){
         local PYTHON_BIN="$PYTHON_PATH/bin/python$python_short_version"
         local VIRTUALENV="$PYTHON_PATH/bin/virtualenv-$python_short_version"
         if [ "$python_short_version" == "2.4" ]; then
-            local pep8_version='==1.2'
-            local pylint_version='==123'
+            pep8_version='==1.2'
         fi
         $PYTHON_BIN $VIRTUALENV $VENV_PATH/$python_version
         h2 a
