@@ -50,7 +50,7 @@ class DeviceError(Exception):
         self.value = message
 
     def __str__(self):
-        return repr(self.message)
+        return repr(self.value)
 
 #
 # Classes
