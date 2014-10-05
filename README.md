@@ -26,8 +26,8 @@ Prerequisites
 Compatibility
 -------------
 
-* This script has been tested under Python 2.7 only.
-* It is not compatible with Python 2.4
+* Tested under Python versions 2.7 and 3.4
+* It is not compatible with Python 2.4: See issue #21
 * It has been tested under Nagios 3.x only.
 
 Usage examples
