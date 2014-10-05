@@ -38,6 +38,11 @@ import argparse
 __version__ = '0.9.2'
 __author__ = 'Samuel Krieg'
 
+# Python2.x compatibility
+if sys.version >= '3':
+    long = int
+
+
 #
 # Exceptions
 #
@@ -554,7 +559,7 @@ def main(default_values):
     else:
         # get the time between the two metrics
         elapsed_time = time.time() - time0
-        for if_name, if_data1 in traffic1.iteritems():
+        for if_name, if_data1 in traffic1.items():
 
             if if_name not in if_data0:
                 # The interface was added between the last and the current run.
