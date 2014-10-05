@@ -178,7 +178,7 @@ class ProcNetDev(object):
             # get the values
             values = [int(x) for x in data.split()]
             # bring titles and values together to make interface data
-            if_data = dict(zip(titles, values))
+            if_data = dict(list(zip(titles, values)))
             self.interfaces[if_name] = if_data
         return self.interfaces
 
