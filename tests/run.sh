@@ -3,7 +3,9 @@
 set -e
 
 function execute(){
-    echo "> \"$*\""
+    local default="\e[39m"
+    local gray="\e[90m"
+    echo -e "> ${gray}\"$*\"${default}"
     $*
 }
 
@@ -114,20 +116,20 @@ function create_virtualenv(){
         local PYTHON_BIN="$PYTHON_PATH/bin/python$python_short_version"
         local VIRTUALENV="$PYTHON_PATH/bin/virtualenv-$python_short_version"
         h2 Creating virtualenv for Python-$python_version $VIRTUALENV
-        if [ "$python_short_version" == "2.4" ]; then
-            pep8_version='==1.2'
-        fi
         execute $PYTHON_BIN $VIRTUALENV $venv_dir
         activate_virtualenv $python_version
         if [ "$python_short_version" == "2.7" ]; then
             execute pip install pep8
         fi
         if [ "$python_short_version" == "2.4" ]; then
+            pep8_version='==1.2'
+            #pylint_version='==0.28.0' # requiert astroid
+            pylint_version='==0.15.2'
             execute pip install argparse
             # astroid wants unittest2 unittest2>=0.5.1
             execute pip install 'unittest2==0.5.1'
-            # pylint installs astroid (which latests version is not 2.4 compatible)
-            execute pip install 'astroid==1.0.0'
+            # impossible to find a compatible version on pypi
+            # execute pip install 'logilab-astng==0.19.0'
         fi
         echo "Executing \"pip install pylint$pylint_version\""
         execute pip install pylint$pylint_version
@@ -173,7 +175,7 @@ function run_tests() {
         h2 Running Pylint...
         set +e
         execute $VENV_PATH/$python_version/bin/pylint -E ./check_iftraffic_nrpe.py
-        if [ "$?" == "0" ]; then
+        if [ "$?" != "0" ]; then
             FINAL_MSG="${FINAL_MSG}Errors during pylint of Python $python_version\n"
         fi
         execute $VENV_PATH/$python_version/bin/pylint -r n ./check_iftraffic_nrpe.py
@@ -187,6 +189,7 @@ function run_tests() {
 }
 
 function run_full_tests_version(){
+    mkdir -p tmp virtualenv python
     local python_version=$1
     local virtualenv_version=$2
     download_python $python_version
@@ -204,13 +207,7 @@ function run_full_tests_version(){
 # 2.4 plante a l'install de argparse :/
 #run_full_tests_version 2.4.4 1.7.2
 
-# pip install argparse:
-#   - tsocks timeout
-#   - proxy:  error:14090086:SSL routines:SSL3_GET_SERVER_CERTIFICATE:certificate verify failed
 run_full_tests_version 2.7.8 1.11.6
-
-# pip install pylint
-#   - tsocks: timeout
 run_full_tests_version 3.4.1 1.11.6
  
 echo '##############'

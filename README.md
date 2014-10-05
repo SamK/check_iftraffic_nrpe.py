@@ -79,6 +79,8 @@ Testing the code:
 
     ./tests/run.sh
 
+This script will download and create all the appropriate Python versions and virtual environnements.
+
 Author
 ------
 
