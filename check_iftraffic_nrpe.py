@@ -161,9 +161,9 @@ class ProcNetDev(object):
         titles = lines[1]
         _, rx_titles, tx_titles = titles.split("|")
 
-        # transorm the titles into arrays
-        rx_titles = list(map(lambda a: "rx_" + a, rx_titles.split()))
-        tx_titles = list(map(lambda a: "tx_" + a, tx_titles.split()))
+        # transorm the titles into a list
+        rx_titles = list(["rx_" + a for a in rx_titles.split()])
+        tx_titles = list(["tx_" + a for a in tx_titles.split()])
 
         # append the titles together
         titles = rx_titles + tx_titles
