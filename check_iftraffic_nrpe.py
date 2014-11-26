@@ -494,10 +494,15 @@ def main(default_values):
             nagios_result.messages.append("First run.")
             nagios_result.status = 'UNKNOWN'
     else:
-        uptime0, procnetdev0 = datafile.read()
-        time0 = datafile.mtime()
         try:
+            uptime0, procnetdev0 = datafile.read()
+            time0 = datafile.mtime()
             if_data0 = ProcNetDev().parse(procnetdev0)
+        except IndexError:
+            os.remove(args.data_file)
+            if_data0 = None
+            time0 = time.time()
+            nagios_result.messages.append("Malformed data file, skipping run.")
         except ValueError:
             # This must be a script upgrade
             os.remove(args.data_file)
