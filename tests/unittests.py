@@ -11,7 +11,6 @@ import check_iftraffic_nrpe as myscript
 class FooTest(unittest.TestCase):
 class DeviceError(Exception):
 class InterfaceDetection(object):
-class DataFile():
 class ProcNetDev():
 """
 
@@ -171,6 +170,60 @@ class Nagios_Result(object):
 
     def test_add(self):
         pass
+
+class Data_File(unittest.TestCase):
+
+    def setUp(self):
+        self.filename = './unit-tests-datafile'
+        self.datafile = myscript.DataFile(self.filename)
+
+    def tearDown(self):
+        if os.path.isfile(self.filename):
+            os.unlink(self.filename)
+
+    def write_datafile(self):
+        self.datafile.uptime = myscript.uptime()
+        self.datafile.data = myscript.ProcNetDev().read()
+        self.datafile.write()
+
+    def parse_data(self, uptime, procnetdev):
+        self.assertTrue(isinstance(uptime, float), 'The uptime must be a float type')
+        self.assertGreater(uptime, 0.0, 'The uptime cannot be 0')
+        lines = procnetdev.split('\n')
+        self.assertGreater(len(lines), 2, 'The /proc/net/dev file does not seem to be correctly parsed')
+
+    def test_parse_datafile(self):
+        self.write_datafile()
+        uptime0, procnetdev0 = self.datafile.read()
+        self.parse_data(uptime0, procnetdev0)
+
+    def test_write_datafile(self):
+        self.write_datafile()
+
+    def test_parse_empty_datafile(self):
+        open(self.filename, 'w').close()
+        self.assertRaises(IndexError,self.datafile.read)
+
+    def test_read_missing_datafile(self):
+        if os.path.isfile(self.filename):
+            os.unlink(self.filename)
+        self.assertRaises(IOError, self.datafile.read)
+
+    def test_read_malformed_datafile(self):
+        f = open(self.filename, 'w')
+        f.write('This is the content of a malformed datafile')
+        f.close()
+        self.assertRaises(ValueError, self.datafile.read)
+
+    def test_write_non_writable_datafile(self):
+        f = open(self.filename, 'a')
+        os.chmod(self.filename, 0o444);
+        self.assertRaises(IOError,self.write_datafile)
+
+    def test_write_non_readable_datafile(self):
+        self.write_datafile()
+        os.chmod(self.filename, 0o000);
+        self.assertRaises(IOError,self.write_datafile)
 
 
 if __name__ == "__main__":
