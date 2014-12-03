@@ -260,7 +260,7 @@ class NagiosService(object):
                 'min_level': self.min_level,
                 'max_level': self.max_level}
 
-    def status(self, value):
+    def status(self):
         """Returns the string defining the Nagios status of the value"""
         if self.value >= self.crit_level:
             return 'CRITICAL'
@@ -297,6 +297,7 @@ class NagiosResult(object):
         """Return the output of a Nagios check"""
 
         # The name and the status
+
         output = "%s %s" % (self.name, self.status)
 
         # Some messages if existing
@@ -325,7 +326,7 @@ class NagiosResult(object):
     def add(self, new_service):
         """ Add a NagiosService object in the Nagios results
         """
-        self.status = self.worst(self.status, new_service.status)
+        self.status = self.worst(self.status, new_service.status())
         self._services.append(new_service)
 
 
