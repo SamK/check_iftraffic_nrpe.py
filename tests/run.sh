@@ -2,17 +2,18 @@
 #set -x
 set -e
 
+BINTESTS_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+ROOT_PATH=$( dirname $BINTESTS_PATH )
+BUILDS_PATH="${ROOT_PATH}/builds"
+mkdir -p "$BUILDS_PATH"
+
+
 function execute(){
     local default="\e[39m"
     local gray="\e[90m"
     echo -e "> ${gray}\"$*\"${default}"
     $*
 }
-
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-cd $DIR
-cd ..
-DIR="$( pwd )"
 
 FINAL_MSG=''
 
@@ -26,9 +27,9 @@ function h2() {
     echo "-----------"
 }
 
-PYTHON_PATH=$DIR/python
-VENV_PATH=$DIR/virtualenv
-TMP=$DIR/tmp
+PYTHON_PATH=$BUILDS_PATH/python
+VENV_PATH=$BUILDS_PATH/virtualenv
+TMP=$BUILDS_PATH/tmp
 PKG_PREFIX="Python"
 
 short_version(){
@@ -46,7 +47,6 @@ function download_python() {
         h2 Downloading Python $version
         execute cd $TMP
         execute wget -q https://www.python.org/ftp/python/$version/$pkgname
-        execute cd ..
     fi
 }
 
@@ -68,7 +68,6 @@ function install_python(){
         execute ./configure $configure_opts --prefix=${PYTHON_PATH} --with-ssl
         execute make
         execute make install
-        execute cd ../..
     fi
 }
 
@@ -80,7 +79,6 @@ function download_virtualenv() {
         h2 downloading virtualenv $version
         execute cd $TMP
         execute wget -q http://pypi.python.org/packages/source/v/virtualenv/$pkgname
-        execute cd ..
     fi
 }
 function install_virtualenv(){
@@ -93,7 +91,6 @@ function install_virtualenv(){
         execute tar xzf virtualenv-$version.tar.gz
         execute cd virtualenv-$version
         execute $PYTHON_PATH/bin/python$python_short_version setup.py install
-        execute cd ../..
     fi
 }
 
@@ -174,6 +171,7 @@ function run_tests() {
     if [ "$version" != "2.4" ]; then
         h2 Running Pylint...
         set +e
+        execute cd $ROOT_PATH
         execute $VENV_PATH/$python_version/bin/pylint -E ./check_iftraffic_nrpe.py
         if [ "$?" != "0" ]; then
             FINAL_MSG="${FINAL_MSG}Errors during pylint of Python $python_version\n"
