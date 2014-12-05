@@ -61,8 +61,12 @@ class Uptime(unittest.TestCase):
         f = open('/proc/uptime','r')
         self.expected_result = float(f.readline().split()[0])
         f.close()
+        self.max_diff = 1.0
+    def almost_equal(self, v1, v2):
+        return abs(v1 - v2) < self.max_diff
     def test(self):
-        self.assertEqual(myscript.uptime(), self.expected_result)
+        uptime_is_equal = self.almost_equal(myscript.uptime(), self.expected_result)
+        self.assertTrue(uptime_is_equal)
 
 
 class Specify_Devices(unittest.TestCase):
