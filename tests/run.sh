@@ -7,7 +7,6 @@ ROOT_PATH=$( dirname $BINTESTS_PATH )
 BUILDS_PATH="${ROOT_PATH}/builds"
 mkdir -p "$BUILDS_PATH"
 
-
 function execute(){
     echo -e "> \"$*\""
     $*
@@ -170,14 +169,14 @@ function run_tests() {
         h2 Running Pylint...
         set +e
         execute cd $ROOT_PATH
-        execute $VENV_PATH/$python_version/bin/pylint -E ./check_iftraffic_nrpe.py
+        execute $VENV_PATH/$python_version/bin/pylint --output-format=colorized --rcfile=/dev/null -E ./check_iftraffic_nrpe.py
         FINAL_MSG="${FINAL_MSG}Execution of pylint of Python $python_version: "
         if [ "$?" == "0" ]; then
             FINAL_MSG="${FINAL_MSG}OK\n"
         else
             FINAL_MSG="${FINAL_MSG}Errors\n"
         fi
-        execute $VENV_PATH/$python_version/bin/pylint -r n ./check_iftraffic_nrpe.py
+        execute $VENV_PATH/$python_version/bin/pylint --output-format=colorized --rcfile=/dev/null -r n ./check_iftraffic_nrpe.py
         set -e
     fi
     h2 Running $VENV_PATH/$python_version/bin/pep8
