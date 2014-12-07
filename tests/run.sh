@@ -177,7 +177,11 @@ function run_tests() {
             FINAL_MSG="${FINAL_MSG}Errors\n"
         fi
         execute $VENV_PATH/$python_version/bin/pylint --output-format=colorized --rcfile=/dev/null -r n ./check_iftraffic_nrpe.py
+        R=$?
         set -e
+        if [ "$R" != "0" ]; then
+            FINAL_MSG="${FINAL_MSG}  Pylint exit code was $R\n"
+        fi
     fi
     h2 Running $VENV_PATH/$python_version/bin/pep8
     execute $VENV_PATH/$python_version/bin/pep8 --ignore=E111,E221,E701,E127 --show-source --show-pep8 ./check_iftraffic_nrpe.py
