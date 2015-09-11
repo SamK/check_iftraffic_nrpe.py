@@ -2,17 +2,15 @@
 #set -x
 set -e
 
+BINTESTS_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+ROOT_PATH=$( dirname $BINTESTS_PATH )
+BUILDS_PATH="${ROOT_PATH}/builds"
+mkdir -p "$BUILDS_PATH"
+
 function execute(){
-    local default="\e[39m"
-    local gray="\e[90m"
-    echo -e "> ${gray}\"$*\"${default}"
+    echo -e "> \"$*\""
     $*
 }
-
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-cd $DIR
-cd ..
-DIR="$( pwd )"
 
 FINAL_MSG=''
 
@@ -26,9 +24,9 @@ function h2() {
     echo "-----------"
 }
 
-PYTHON_PATH=$DIR/python
-VENV_PATH=$DIR/virtualenv
-TMP=$DIR/tmp
+PYTHON_PATH=$BUILDS_PATH/python
+VENV_PATH=$BUILDS_PATH/virtualenv
+TMP=$BUILDS_PATH/tmp
 PKG_PREFIX="Python"
 
 short_version(){
@@ -46,7 +44,6 @@ function download_python() {
         h2 Downloading Python $version
         execute cd $TMP
         execute wget -q https://www.python.org/ftp/python/$version/$pkgname
-        execute cd ..
     fi
 }
 
@@ -68,7 +65,6 @@ function install_python(){
         execute ./configure $configure_opts --prefix=${PYTHON_PATH} --with-ssl
         execute make
         execute make install
-        execute cd ../..
     fi
 }
 
@@ -80,7 +76,6 @@ function download_virtualenv() {
         h2 downloading virtualenv $version
         execute cd $TMP
         execute wget -q http://pypi.python.org/packages/source/v/virtualenv/$pkgname
-        execute cd ..
     fi
 }
 function install_virtualenv(){
@@ -93,7 +88,6 @@ function install_virtualenv(){
         execute tar xzf virtualenv-$version.tar.gz
         execute cd virtualenv-$version
         execute $PYTHON_PATH/bin/python$python_short_version setup.py install
-        execute cd ../..
     fi
 }
 
@@ -174,12 +168,20 @@ function run_tests() {
     if [ "$version" != "2.4" ]; then
         h2 Running Pylint...
         set +e
-        execute $VENV_PATH/$python_version/bin/pylint -E ./check_iftraffic_nrpe.py
-        if [ "$?" != "0" ]; then
-            FINAL_MSG="${FINAL_MSG}Errors during pylint of Python $python_version\n"
+        execute cd $ROOT_PATH
+        execute $VENV_PATH/$python_version/bin/pylint --output-format=colorized --rcfile=/dev/null -E ./check_iftraffic_nrpe.py
+        FINAL_MSG="${FINAL_MSG}Execution of pylint of Python $python_version: "
+        if [ "$?" == "0" ]; then
+            FINAL_MSG="${FINAL_MSG}OK\n"
+        else
+            FINAL_MSG="${FINAL_MSG}Errors\n"
         fi
-        execute $VENV_PATH/$python_version/bin/pylint -r n ./check_iftraffic_nrpe.py
+        execute $VENV_PATH/$python_version/bin/pylint --output-format=colorized --rcfile=/dev/null -r n ./check_iftraffic_nrpe.py
+        R=$?
         set -e
+        if [ "$R" != "0" ]; then
+            FINAL_MSG="${FINAL_MSG}  Pylint exit code was $R\n"
+        fi
     fi
     h2 Running $VENV_PATH/$python_version/bin/pep8
     execute $VENV_PATH/$python_version/bin/pep8 --ignore=E111,E221,E701,E127 --show-source --show-pep8 ./check_iftraffic_nrpe.py
@@ -189,7 +191,7 @@ function run_tests() {
 }
 
 function run_full_tests_version(){
-    mkdir -p tmp virtualenv python
+    mkdir -p "$TMP" "$VENV_PATH" "$PYTHON_PATH"
     local python_version=$1
     local virtualenv_version=$2
     download_python $python_version

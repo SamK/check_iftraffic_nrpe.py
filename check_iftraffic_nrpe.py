@@ -121,7 +121,9 @@ class DataFile(object):
 
     def read(self):
         """Returns the uptime and the data stored in the datafile"""
-        content = open(self.filename, "r").readlines()
+        file_obj = open(self.filename, "r")
+        content = file_obj.readlines()
+        file_obj.close()
         self.uptime = float(content[0])
         self.data = "".join(content[1:])
         return self.uptime, self.data
