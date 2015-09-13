@@ -148,8 +148,8 @@ function create_virtualenv(){
             # impossible to find a compatible version on pypi
             # execute pip install 'logilab-astng==0.19.0'
         fi
-        echo "Executing \"pip install pylint$pylint_version\""
-        execute pip install pylint$pylint_version
+        echo "Executing \"pip -q install pylint$pylint_version\""
+        execute pip -q install pylint$pylint_version
         deactivate_virtualenv
     fi
 }
