@@ -2,40 +2,56 @@
 #set -x
 set -e
 
+## Directories
+# tests directory
 BINTESTS_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+# Root directory
 ROOT_PATH=$( dirname $BINTESTS_PATH )
+# Where to put all the builds
 BUILDS_PATH="${ROOT_PATH}/builds"
 mkdir -p "$BUILDS_PATH"
+# python binaries
+PYTHON_PATH=$BUILDS_PATH/python
+# virtualenv directories
+VENV_PATH=$BUILDS_PATH/virtualenv
+# downlads
+TMP=$BUILDS_PATH/tmp
+
+## Parameters
+
+# Common name of the tarball
+PKG_PREFIX="Python"
+
+# Final output of the tests
+FINAL_MSG=''
 
 function execute(){
+    # Prints the command line before executing a command
     echo -e "> \"$*\""
     $*
 }
 
-FINAL_MSG=''
-
 function h1() {
+    # Header 1
     echo $@
     echo "==========="
 }
 
 function h2() {
+    # Header 2
     echo $@
     echo "-----------"
 }
 
-PYTHON_PATH=$BUILDS_PATH/python
-VENV_PATH=$BUILDS_PATH/virtualenv
-TMP=$BUILDS_PATH/tmp
-PKG_PREFIX="Python"
-
-short_version(){
+function short_version(){
+    # Return the short version of a Python version
     local long_version=$1
     local short_version="${long_version%.*}"
     echo $short_version
 }
 
 function download_python() {
+    # download python based on the version
     local version=$1
     local foldername=$PKG_PREFIX-$version
     local pkgname=$foldername.tgz
@@ -48,6 +64,7 @@ function download_python() {
 }
 
 function install_python(){
+    # install python based on the version
     local version=$1
     local short_version=$( short_version $version )
     local configure_opts=''
@@ -69,6 +86,7 @@ function install_python(){
 }
 
 function download_virtualenv() {
+    # download the virtualenv package based on the version
     local version=$1
     local foldername=virtualenv-$version
     local pkgname=$foldername.tar.gz
@@ -79,6 +97,9 @@ function download_virtualenv() {
     fi
 }
 function install_virtualenv(){
+    # install virtualenv
+    # $1 = virtualenv version
+    # $2 = python version
     local version=$1
     local python_version=$2
     local python_short_version=$( short_version $python_version )
@@ -101,6 +122,8 @@ function deactivate_virtualenv(){
 }
 
 function create_virtualenv(){
+    # setup a virtuel environment
+    # $1 = Python version
     local python_version=$1
     local python_short_version=$( short_version $python_version )
     local venv_dir="$VENV_PATH/$python_version"
@@ -157,6 +180,13 @@ function create_pyvenv(){
 }
 
 function run_tests() {
+    # run the tests on a specific python version
+    # $1 = Python version
+    #
+    # Actual tests:
+    # * pylint (where version != 2.4)
+    # * pep8
+    # * ./tests/unittests.py
     local version=$1
     local python_short_version=$( short_version $version )
     h1 "Running tests for Python-$version"
@@ -191,6 +221,10 @@ function run_tests() {
 }
 
 function run_full_tests_version(){
+    # Prepare the environments and Execute the tests
+    # Arguments:
+    # $1 = Python version
+    # $2 = Virtualenv version
     mkdir -p "$TMP" "$VENV_PATH" "$PYTHON_PATH"
     local python_version=$1
     local virtualenv_version=$2
