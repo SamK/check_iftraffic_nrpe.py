@@ -35,7 +35,7 @@ import sys
 import time
 import argparse
 
-__version__ = '0.10'
+__version__ = '0.11'
 __author__ = 'Samuel Krieg'
 
 # Python2.x compatibility
