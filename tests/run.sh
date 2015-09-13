@@ -27,20 +27,26 @@ FINAL_MSG=''
 
 function execute(){
     # Prints the command line before executing a command
+    echo -en "\e[32m"
     echo -e "> \"$*\""
+    echo -en "\e[0m"
     $*
 }
 
 function h1() {
     # Header 1
+    echo -en "\e[32m"
     echo $@
     echo "==========="
+    echo -en "\e[0m"
 }
 
 function h2() {
     # Header 2
+    echo -en "\e[32m"
     echo $@
     echo "-----------"
+    echo -en "\e[0m"
 }
 
 function short_version(){
