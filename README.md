@@ -86,3 +86,6 @@ Author
 
 Samuel Krieg <my_first_name.my_last_name at gmail dot com>
 
+Contributors:
+
+@georgehansper, @hgrohne-cygnusnetworks-de, @tbc
