@@ -1,5 +1,4 @@
-check_iftraffic_nrpe.py
-=======================
+# check_iftraffic_nrpe.py
 
 This is a Nagios plugin to check network traffic with NRPE on Linux.
 This script has been created because I like writing Python scripts.
@@ -11,27 +10,23 @@ Here are some of the features:
  * understands computer reboots
  * understand counter resets (32bits or 64bits)
 
-Installation
---------
+## Installation
 
 * The latest stable release can be found here: https://github.com/SamK/check_iftraffic_nrpe.py/releases
 * Copy the file `check_iftraffic_nrpe.py` into your favorite folder (examples: `/usr/lib/nagios/plugins/, /usr/local/bin)
 
-Prerequisites
--------------
+## Prerequisites
 
 * Python
 * The python-argparse library
 
-Compatibility
--------------
+## Compatibility
 
 * Tested under Python versions 2.7 and 3.4
 * It is not compatible with Python 2.4: See issue #21
 * It has been tested under Nagios 3.x only.
 
-Usage examples
---------------
+## Usage examples
 
 How to get some help:
 
@@ -61,15 +56,13 @@ All commands below define the same bandwith but output different units of metric
     check_iftraffic_nrpe.py --bandwidth=1000000000 --unit=bps
 
 
-Contributing
-------------
+## Contributing
 
 * Submit bugs if you find some.
 * Submit pull requests and I will happily merge them *when I have free time*.
 Note that I must understand your code.
 
-Development
-----------
+## Development
 
 Print library documentation:
 
@@ -81,11 +74,7 @@ Testing the code:
 
 This script will download and create all the appropriate Python versions and virtual environnements.
 
-Author
-------
+## Author
 
 Samuel Krieg <my_first_name.my_last_name at gmail dot com>
 
-Contributors:
-
-@georgehansper, @hgrohne-cygnusnetworks-de, @tbc
