@@ -250,7 +250,7 @@ class NagiosService(object):
 
     def __str__(self):
         """Return the perfdata string"""
-        return '%(label)s=%(value).2fc;' \
+        return '%(label)s=%(value).2f;' \
                '%(warn_level)s;' \
                '%(crit_level)s;' \
                '%(min_level)s;' \
