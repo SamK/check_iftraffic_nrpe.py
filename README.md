@@ -12,8 +12,14 @@ Here are some of the features:
 
 ## Installation
 
+### Manual installation
+
 * The latest stable release can be found here: https://github.com/SamK/check_iftraffic_nrpe.py/releases
 * Copy the file `check_iftraffic_nrpe.py` into your favorite folder (examples: `/usr/lib/nagios/plugins/, /usr/local/bin)
+
+### Package installation
+
+    pip install check_iftraffic_nrpe
 
 ## Prerequisites
 
