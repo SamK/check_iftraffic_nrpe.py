@@ -21,7 +21,7 @@ Here are some of the features:
 
 This command will install the script at `/usr/local/bin/check_iftraffic_nrpe.py`
 
-    pip install check_iftraffic_nrpe
+    pip install check-iftraffic-nrpe
 
 ## Prerequisites
 
