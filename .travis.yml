@@ -19,3 +19,5 @@ script:
   - "cat /var/tmp/traffic_stats.dat"
   - "./check_iftraffic_nrpe.py ; [ $? -le 1 ]"
   - "cat /var/tmp/traffic_stats.dat"
+notifications:
+  email: false
