@@ -306,7 +306,11 @@ class NagiosResult(object):
         if self.messages:
             output += ": " + ' '.join(self.messages)
 
-        # perfdata
+        # perfdata output
+
+        # Consistent order of perfdata across runs is
+        # required by icinga+pnp4nagios.
+        self._services.sort(key=lambda x: x.label)
         output += ' |'
         for service in self._services:
             output += " %s" % service
