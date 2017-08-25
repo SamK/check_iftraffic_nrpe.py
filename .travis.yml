@@ -1,0 +1,21 @@
+language: python
+python:
+  - "2.7"
+  - "3.3"
+  - "3.4"
+  - "3.5"
+  - "3.6"
+  - "nightly"
+before_script:
+  - "pep8 --ignore=E111,E221,E701,E127 --show-source --show-pep8 ./check_iftraffic_nrpe.py"
+  - "pylint --version"
+  - "pylint -r n ./check_iftraffic_nrpe.py; true"
+  - "pylint --disable=print-statement -E ./check_iftraffic_nrpe.py; true"
+script:
+  # unit tests
+  - "python ./tests/unittests.py"
+  # run the program twice to make sure it's working as expected
+  - "./check_iftraffic_nrpe.py ; [ $? -eq 3 ]"
+  - "cat /var/tmp/traffic_stats.dat"
+  - "./check_iftraffic_nrpe.py ; [ $? -le 1 ]"
+  - "cat /var/tmp/traffic_stats.dat"

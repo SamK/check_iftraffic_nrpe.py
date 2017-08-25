@@ -76,11 +76,7 @@ Print library documentation:
 
     pydoc ./check_iftraffic_nrpe.py
 
-Testing the code:
-
-    ./tests/run.sh
-
-This script will download and create all the appropriate Python versions and virtual environnements.
+The tests are done by Travis-CI. There is still a lot of uncovered code.
 
 ## Author
 
